@@ -50,7 +50,6 @@ file(GLOB SLAM_LYJ_VULKAN_TEXTURE_SHADER
 file(GLOB SLAM_LYJ_VULKAN_TRIANGLE_SHADER
     vulkanImp/shader/triangle/*.frag
     vulkanImp/shader/triangle/*.vert)
-# message(FATAL_ERROR ${SLAM_LYJ_VULKAN_TEXTURE_SHADER})
 source_group(base/${_source_path_msvc} FILES ${SLAM_LYJ_BASE})
 source_group(common/${_source_path_msvc} FILES ${SLAM_LYJ_COMMON})
 source_group(vulkanImp/${_source_path_msvc} FILES ${SLAM_LYJ_VULKAN})
@@ -126,6 +125,8 @@ if(MULTI_DLL EQUAL 0)
         ${SLAM_LYJ_OUT}
         )
 
+    # target_include_directories(${PROJECT_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
+
     target_link_libraries(${PROJECT_NAME} 
         Ceres::ceres 
         glm::glm 
@@ -133,6 +134,8 @@ if(MULTI_DLL EQUAL 0)
         ${VULKAN_LIBRARIES} 
         ${GLFW_LIBRARIES} 
         ${Boost_LIBRARIES}
+        ${PCL_LIBRARIES}
+        Qt5::Core Qt5::Gui Qt5::Widgets
     )
 else()
     # message(FATAL_ERROR "multi")
@@ -254,3 +257,47 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${CMAKE_CURRENT_BINARY_DIR}/../example/Release
 # COMMENT "Copying ${PROJECT_NAME}.dll to ${CMAKE_CURRENT_BINARY_DIR}/../example/Release"
 # )
+
+
+####################install components##############################
+# cmake_minimum_required(VERSION 3.5)
+
+# project(MyLibrary VERSION 1.0)
+
+# # 添加库
+# add_library(MyLibrary SHARED src/MyLibrary.cpp)
+# add_library(MyLibraryExtra SHARED src/MyLibraryExtra.cpp)
+
+# # 设置库的公共头文件
+# target_include_directories(MyLibrary PUBLIC include)
+# target_include_directories(MyLibraryExtra PUBLIC include)
+
+# # 设置安装规则
+# install(TARGETS MyLibrary MyLibraryExtra
+#         EXPORT MyLibraryTargets
+#         LIBRARY DESTINATION lib
+#         ARCHIVE DESTINATION lib
+#         RUNTIME DESTINATION bin)
+
+# # 安装导出文件
+# install(EXPORT MyLibraryTargets
+#         FILE MyLibraryTargets.cmake
+#         NAMESPACE MyLibrary::
+#         DESTINATION lib/cmake/MyLibrary)
+
+# # 创建配置文件
+# include(CMakePackageConfigHelpers)
+
+# # 生成配置文件模板
+# configure_package_config_file(MyLibraryConfig.cmake.in
+#                               MyLibraryConfig.cmake
+#                               INSTALL_DESTINATION lib/cmake/MyLibrary
+#                               NO_SET_AND_CHECK_MACRO)
+
+# # 安装配置文件
+# install(FILES "${CMAKE_CURRENT_BINARY_DIR}/MyLibraryConfig.cmake"
+#         DESTINATION lib/cmake/MyLibrary)
+
+# # 安装头文件
+# install(FILES include/MyLibrary.h include/MyLibraryExtra.h
+#         DESTINATION include/MyLibrary)

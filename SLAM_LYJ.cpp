@@ -14,6 +14,14 @@
 #include "extractor/Cannyextractor.h"
 #include "extractor/SIFTextractor.h"
 #include "STLPlus/include/file_system.h"
+#include <flann/flann.hpp>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <cstdlib> // for rand()
+#include <ctime>   // for time()
+#include <QApplication>
+#include <QPushButton>
 
 #include "debugger/debugger.h"
 
@@ -442,6 +450,93 @@ SLAM_LYJ_API void testGlobalOption() {
     //GlobalInnerOption* gOpt = GlobalInnerOption::get();
     LYJOPT->sysName = "LYJ_SLAM";
     std::cout << LYJOPT->sysName << std::endl;
+}
+SLAM_LYJ_API void testFlann()
+{
+    // 创建一些随机数据
+    const int num_points = 100;
+    const int dim = 2;
+    std::vector<std::vector<float>> dataset(num_points, std::vector<float>(dim));
+    for (int i = 0; i < num_points; ++i)
+    {
+        dataset[i][0] = static_cast<float>(rand()) / RAND_MAX; // x
+        dataset[i][1] = static_cast<float>(rand()) / RAND_MAX; // y
+    }
+
+    // 将数据转换为 FLANN 格式
+    flann::Matrix<float> dataset_matrix(&dataset[0][0], num_points, dim);
+
+    // 创建一个 FLANN 索引
+    flann::Index<flann::L2<float>> index(dataset_matrix, flann::KDTreeIndexParams(4));
+    index.buildIndex();
+
+    // 查询点
+    std::vector<float> query_point = { 0.5f, 0.5f };
+    flann::Matrix<float> query_matrix(&query_point[0], 1, dim);
+
+    // 存储最近邻的索引和距离
+    std::vector<std::vector<int>> indices(1);
+    std::vector<std::vector<float>> dists(1);
+
+    // 进行最近邻搜索
+    index.knnSearch(query_matrix, indices, dists, 1, flann::SearchParams(32));
+
+    // 打印结果
+    std::cout << "Nearest neighbor index: " << indices[0][0] << ", Distance: " << dists[0][0] << std::endl;
+
+    return;
+}
+SLAM_LYJ_API void testPCL()
+{
+    // 初始化随机数生成器
+    std::srand(static_cast<unsigned int>(std::time(0)));
+
+    // 创建一个点云对象
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+
+    // 设置点云的宽度和高度
+    cloud->width = 1000;    // 点的数量
+    cloud->height = 1;      // 单行点云
+    cloud->is_dense = true; // 点云是否是稠密的
+
+    // 调整点云大小
+    cloud->points.resize(cloud->width * cloud->height);
+
+    // 生成随机点
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        cloud->points[i].x = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // x 范围 [0, 10]
+        cloud->points[i].y = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // y 范围 [0, 10]
+        cloud->points[i].z = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // z 范围 [0, 10]
+    }
+
+    std::cout << "Generated " << cloud->width * cloud->height << " random points." << std::endl;
+
+    // 创建一个可视化对象
+    pcl::visualization::CloudViewer viewer("Random Point Cloud Viewer");
+
+    // 设置点云数据
+    viewer.showCloud(cloud);
+
+    // 等待直到用户关闭窗口
+    while (!viewer.wasStopped())
+    {
+    }
+    return;
+}
+SLAM_LYJ_API void testQT()
+{
+    int ac = 0;
+	char** av = nullptr;
+    QApplication app(ac, av);
+    
+
+    QPushButton button("Hello, Qt!");
+    button.resize(200, 100);
+    button.show();
+
+    app.exec();
+    return;
 }
 
 SLAM_LYJ_API int getVersion(){

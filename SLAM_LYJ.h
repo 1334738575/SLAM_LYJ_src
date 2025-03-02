@@ -28,6 +28,9 @@ SLAM_LYJ_API void testGrid();
 SLAM_LYJ_API void testSTLPlus();
 SLAM_LYJ_API void testBuffer();
 SLAM_LYJ_API void testGlobalOption();
+SLAM_LYJ_API void testFlann();
+SLAM_LYJ_API void testPCL();
+SLAM_LYJ_API void testQT();
 
 SLAM_LYJ_API int getVersion();
 
