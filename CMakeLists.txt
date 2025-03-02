@@ -125,8 +125,6 @@ if(MULTI_DLL EQUAL 0)
         ${SLAM_LYJ_OUT}
         )
 
-    # target_include_directories(${PROJECT_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
-
     target_link_libraries(${PROJECT_NAME} 
         Ceres::ceres 
         glm::glm 
