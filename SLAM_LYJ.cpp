@@ -20,8 +20,6 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <cstdlib> // for rand()
 #include <ctime>   // for time()
-#include <QApplication>
-#include <QPushButton>
 
 #include "debugger/debugger.h"
 
@@ -522,20 +520,6 @@ SLAM_LYJ_API void testPCL()
     while (!viewer.wasStopped())
     {
     }
-    return;
-}
-SLAM_LYJ_API void testQT()
-{
-    int ac = 0;
-	char** av = nullptr;
-    QApplication app(ac, av);
-    
-
-    QPushButton button("Hello, Qt!");
-    button.resize(200, 100);
-    button.show();
-
-    app.exec();
     return;
 }
 

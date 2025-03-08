@@ -32,9 +32,6 @@ file(GLOB SLAM_LYJ_OPTIMIZER
 file(GLOB SLAM_LYJ_PROCESSOR
     processor/*.h
     processor/*.cpp)
-file(GLOB SLAM_LYJ_VIEWER
-    viewer/*.h
-    viewer/*.cpp)
 file(GLOB SLAM_LYJ_DEBUGGER
     debugger/*.h
     debugger/*.cpp)
@@ -57,7 +54,6 @@ source_group(extractor/${_source_path_msvc} FILES ${SLAM_LYJ_EXTRACTOR})
 source_group(matcher/${_source_path_msvc} FILES ${SLAM_LYJ_MATCHER})
 source_group(optimizer/${_source_path_msvc} FILES ${SLAM_LYJ_OPTIMIZER})
 source_group(processor/${_source_path_msvc} FILES ${SLAM_LYJ_PROCESSOR})
-source_group(viewer/${_source_path_msvc} FILES ${SLAM_LYJ_VIEWER})
 source_group(debugger/${_source_path_msvc} FILES ${SLAM_LYJ_DEBUGGER})
 source_group(./${_source_path_msvc} FILES ${SLAM_LYJ_OUT})
 source_group(thirdParty/STLPlus/${_source_path_msvc} FILES ${THIRDPARTY_STLPLUS})
@@ -106,7 +102,6 @@ if(MULTI_DLL EQUAL 0)
         matcher
         optimizer
         processor
-        viewer
         debugger
         thirdParty
     )
@@ -120,7 +115,6 @@ if(MULTI_DLL EQUAL 0)
         ${SLAM_LYJ_MATCHER}
         ${SLAM_LYJ_OPTIMIZER}
         ${SLAM_LYJ_PROCESSOR}
-        ${SLAM_LYJ_VIEWER}
         ${SLAM_LYJ_DEBUGGER}
         ${SLAM_LYJ_OUT}
         )
@@ -145,7 +139,6 @@ else()
     # file(GLOB SLAM_LYJ_MATCHER_H matcher/*.h)
     # file(GLOB SLAM_LYJ_OPTIMIZER_H optimizer/*.h)
     # file(GLOB SLAM_LYJ_PROCESSOR_H processor/*.h)
-    # file(GLOB SLAM_LYJ_VIEWER_H viewer/*.h)
     # file(GLOB SLAM_LYJ_DEBUGGER_H debugger/*.h)
     # file(GLOB SLAM_LYJ_H *.h)
     # file(GLOB THIRDPARTY_STLPLUS_H thirdParty/STLPlus/include/*.hpp)
@@ -156,7 +149,6 @@ else()
     aux_source_directory(matcher SLAM_LYJ_MATCHER_SRC)
     aux_source_directory(optimizer SLAM_LYJ_OPTIMIZER_SRC)
     # aux_source_directory(processor SLAM_LYJ_PROCESSOR_SRC)
-    aux_source_directory(viewer SLAM_LYJ_VIEWER_SRC)
     aux_source_directory(debugger SLAM_LYJ_DEBUGGER_SRC)
     aux_source_directory(. SLAM_LYJ_SRC)
     aux_source_directory(thirdParty/STLPlus/src THIRDPARTY_STLPLUS_SRC)
@@ -196,11 +188,6 @@ else()
     #     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     #     # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/processor>
     #     $<INSTALL_INTERFACE:include>)
-    add_library(SLAM_LYJ_VIEWER_LIB SHARED ${SLAM_LYJ_VIEWER_SRC})
-    target_include_directories(SLAM_LYJ_VIEWER_LIB PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/viewer>
-        $<INSTALL_INTERFACE:include>)
     add_library(SLAM_LYJ_DEBUGGER_LIB SHARED ${SLAM_LYJ_DEBUGGER_SRC})
     target_include_directories(SLAM_LYJ_DEBUGGER_LIB PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -226,7 +213,6 @@ else()
         SLAM_LYJ_MATCHER_LIB
         SLAM_LYJ_OPTIMIZER_LIB
         # SLAM_LYJ_PROCESSOR_LIB
-        SLAM_LYJ_VIEWER_LIB
         SLAM_LYJ_DEBUGGER_LIB
         THIRDPARTY_STLPLUS_LIB
         )
@@ -244,11 +230,14 @@ endif()
 # show as a folder
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../build/example
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../build/example
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../build/example
-)
+
+if(DEFINED LIBRARY_LYJ_OUTPUT_PATH)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_LYJ_OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_LYJ_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_LYJ_OUTPUT_PATH}
+    )
+endif()
 
 # # copy library after build using command
 # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
