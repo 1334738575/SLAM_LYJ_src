@@ -20,6 +20,8 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <cstdlib> // for rand()
 #include <ctime>   // for time()
+#include "matcher/PatchMatcher.h"
+#include <common/Diffuser.h>
 
 #include "debugger/debugger.h"
 
@@ -520,6 +522,84 @@ SLAM_LYJ_API void testPCL()
     while (!viewer.wasStopped())
     {
     }
+    return;
+}
+SLAM_LYJ_API void testPatchMatch()
+{
+    int w = 800;
+    int h = 600;
+    cv::Mat m(h, w, CV_8UC1);
+    int pSize = 1000;
+    std::vector<cv::KeyPoint> kps(1000);
+    for (int i=0;i<pSize;++i) 
+    {
+        int a = rand() % w;
+        int b = rand() % h;
+        kps[i].pt.x = a;
+        kps[i].pt.y = b;
+    }
+    SLAM_LYJ_MATH::Grid2Df grid(100, h, w, kps);
+    int gw = grid.getGridSize(0);
+    int gh = grid.getGridSize(1);
+    std::vector<cv::KeyPoint> kps2;
+    kps2.reserve(gw * gh);
+    for (int i = 0; i < gh; ++i) {
+        for (int j = 0; j < gw; ++j) {
+            std::list<int> inds = grid.getInds(i, j);
+            if (inds.empty())
+                continue;
+            kps2.push_back(kps[inds.front()]);
+            //std::vector<cv::KeyPoint> kps3;
+            //for (const auto& ind : inds) {
+            //    kps3.push_back(kps[ind]);
+            //}
+            //cv::Mat m42(h, w, CV_8UC1);
+            //SLAM_LYJ_DEBUGGER::drawGrid(m, grid, m42, cv::Scalar(255), 2);
+            //cv::Mat m52(h, w, CV_8UC1);
+            //SLAM_LYJ_DEBUGGER::drawFeatures(m42, kps3, m52, cv::Scalar(255), 5, 2, false);
+            //cv::imshow("every block", m52);
+            //cv::waitKey();
+        }
+    }
+    //cv::Mat m2(h, w, CV_8UC1);
+    //SLAM_LYJ_DEBUGGER::drawFeatures(m, kps, m2, cv::Scalar(255), 5, 2);
+    //cv::imshow("o", m2);
+    //cv::Mat m3(h, w, CV_8UC1);
+    //SLAM_LYJ_DEBUGGER::drawFeatures(m, kps2, m3, cv::Scalar(255), 5, 1);
+    //cv::imshow("d", m3);
+    //cv::Mat m4(h, w, CV_8UC1);
+    //SLAM_LYJ_DEBUGGER::drawGrid(m, grid, m4, cv::Scalar(255), 2);
+    //cv::Mat m5(h, w, CV_8UC1);
+    //SLAM_LYJ_DEBUGGER::drawFeatures(m4, kps2, m5, cv::Scalar(255), 5, 2, false);
+    //cv::imshow("g", m5);
+    //cv::waitKey();
+
+    cv::Mat img1 = cv::Mat::zeros(h, w, CV_8UC1);
+    cv::Mat img2 = cv::Mat::zeros(h, w, CV_8UC1);
+    int v = 255;
+    for (const auto& kp : kps2) {
+        img1.at<uchar>(cv::Point(kp.pt.x, kp.pt.y)) = uchar(v);
+        if((kp.pt.x + 10) < 0 || (kp.pt.x + 10) > w - 1
+            || (kp.pt.y + 10) < 0 || (kp.pt.y + 10) > h - 1)
+			continue;
+        img2.at<uchar>(cv::Point(kp.pt.x + 10, kp.pt.y + 10)) = uchar(v);
+    }
+    //cv::imshow("img1", img1);
+    //cv::imshow("img2", img2);
+    //cv::waitKey();
+    PatchMatcher::Option matchOpt;
+    matchOpt.maxIterNum = 4;
+    PatchMatcher matcher(matchOpt);
+    std::vector<PatchMatchResult> matches;
+    matcher.matchPatch(img1, kps2, img2, false, matches);
+    return;
+}
+
+SLAM_LYJ_API void testDiffuser()
+{
+    SLAM_LYJ_MATH::Diffuser2D diffuser(6, 8, std::vector<Eigen::Vector2i>(), Eigen::Vector2i(3, 3));
+    std::vector<Eigen::Vector2i> locs;
+    while(diffuser.next(locs)){}
     return;
 }
 

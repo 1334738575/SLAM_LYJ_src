@@ -26,7 +26,7 @@ public:
 		center_ = _center;
 		int totalSize = 1;
 		for (int i = 0; i < DIM; ++i) {
-			gridSize_[i] = _sizes[i] / resolution_ + 1;
+			gridSize_[i] = (_sizes[i]+resolution_-1) / resolution_;
 			totalSize *= gridSize_[i];
 		}
 		inds_.resize(totalSize);
@@ -35,7 +35,7 @@ public:
 		int t = 1;
 		for (int i = 0; i < (int)_points.size(); ++i) {
 			for (int j = 0; j < DIM; ++j) {
-				inds[j] = static_cast<int>(_points[i][j] - center_[j]) / resolution_ + gridSize_[j]/2;
+				inds[j] = static_cast<int>(std::floorf((_points[i][j] - center_[j]) / resolution_)) + gridSize_[j]/2;
 			}
 			ind = 0;
 			t = 1;
@@ -65,7 +65,7 @@ public:
 		resolution_ = _resolution;
 		int totalSize = 1;
 		for (int i = 0; i < DIM; ++i) {
-			gridSize_[i] = static_cast<int>(maxVs[i] - minVs[i]) / resolution_ + 1;
+			gridSize_[i] = static_cast<int>(maxVs[i] - minVs[i] + resolution_ - 1) / resolution_;
 			totalSize *= gridSize_[i];
 		}
 		inds_.resize(totalSize);
@@ -106,13 +106,57 @@ public:
 	virtual const std::list<int>& getIndsNear(const VecTemX& _point) {
 		std::vector<int> inds(DIM, 0);
 		for (int j = 0; j < DIM; ++j) {
-			inds[j] = static_cast<int>(_point[j] - center_[j]) / resolution_ + gridSize_[j]/2;
+			inds[j] = static_cast<int>(std::floorf((_point[j] - center_[j]) / resolution_)) + gridSize_[j] / 2;
 			if (inds[j] > gridSize_[j])
 				return emptyInds_;
 		}
 		return getIndsInOne(inds);
 	}
 	virtual int getResolution() const { return resolution_; }
+	int getGridSize(int _dim) const {
+		if (_dim < 0 || _dim >= DIM)
+			return -1;
+		return gridSize_[_dim];
+	}
+	Eigen::Matrix<int, DIM, 1> toGridCoord(const VecTemX& _point) const {
+		Eigen::Matrix<int, DIM, 1> inds;
+		for (int j = 0; j < DIM; ++j) {
+			inds[j] = static_cast<int>(std::floorf((_point[j] - center_[j]) / resolution_)) + gridSize_[j] / 2;
+			if (inds[j] > gridSize_[j])
+				std::cout << " warning: out of grid size." << std::endl;
+		}
+		return inds;
+	}
+	//xmin, ymin in gridVoxel
+	VecTemX toRealCoord(const Eigen::Matrix<int, DIM, 1>& _inds) const {
+		VecTemX point;
+		for (int j = 0; j < DIM; ++j) {
+			point[j] = (_inds[j] - gridSize_[j] / 2) * resolution_ + center_[j];
+		}
+		return point;
+	}
+	bool addPoint(const VecTemX& _point, int _id, bool _force = false) {
+		if (_force) {
+			std::cout << "not support." << std::endl;
+			return false;
+		}
+		else {
+			std::vector<int> inds(DIM, 0);
+			int ind = 0;
+			int t = 1;
+			for (int j = 0; j < DIM; ++j) {
+				inds[j] = static_cast<int>(std::floorf((_point[j] - center_[j]) / resolution_)) + gridSize_[j] / 2;
+				if (inds[j] > gridSize_[j])
+					return false;
+			}
+			for (int ii = 0; ii < DIM; ++ii) {
+				ind += t * inds[ii];
+				t *= gridSize_[ii];
+			}
+			inds_[ind].push_back(_id);
+		}
+		return true;
+	}
 
 protected:
 	int resolution_ = 0;
@@ -132,19 +176,19 @@ public:
 		if (_resolution <= 0)
 			return;
 		resolution_ = _resolution;
-		center_ = Eigen::Vector2f(_rows / 2, _cols / 2);
+		center_ = Eigen::Vector2f(_cols / 2, _rows / 2);
 		int totalSize = 1;
-		gridSize_[0] = _cols / resolution_ + 1;
+		gridSize_[0] = (_cols + resolution_ - 1) / resolution_;
 		totalSize *= gridSize_[0];
-		gridSize_[1] = _rows / resolution_ + 1;
+		gridSize_[1] = (_rows + resolution_ - 1) / resolution_;
 		totalSize *= gridSize_[1];
 		inds_.resize(totalSize);
 		std::vector<int> inds(2, 0);
 		int ind = 0;
 		int t = 0;
 		for (int i = 0; i < (int)_points.size(); ++i) {
-			inds[0] = static_cast<int>(_points[i].pt.x - center_[0]) / resolution_ + gridSize_[0] / 2;
-			inds[1] = static_cast<int>(_points[i].pt.y - center_[1]) / resolution_ + gridSize_[1] / 2;
+			inds[0] = static_cast<int>(std::floorf((_points[i].pt.x - center_[0]) / resolution_)) + gridSize_[0] / 2;
+			inds[1] = static_cast<int>(std::floorf((_points[i].pt.y - center_[1]) / resolution_)) + gridSize_[1] / 2;
 			ind = 0;
 			t = 1;
 			for (int ii = 0; ii < 2; ++ii) {
@@ -156,7 +200,15 @@ public:
 	}
 	~Grid2Df() {}
 
-
+	const std::list<int>& getInds(const int& _gRow, const int& _gCol) {
+		return getIndsInOne({_gCol, _gRow});
+	}
+	VecTemX toRealCoord2Df(const int& _gCol, const int& _gRow) const {
+		return toRealCoord( std::move( Eigen::Matrix<int, 2, 1>(_gCol, _gRow)));
+	}
+	Eigen::Matrix<int, 2, 1> toGridCoord2Df(const float& _x, const float& _y) const {
+		return toGridCoord(std::move(Eigen::Matrix<float, 2, 1>(_x, _y)));
+	}
 private:
 
 };

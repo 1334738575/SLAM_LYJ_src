@@ -3,7 +3,7 @@
 
 
 #include "base/PreDefine.h"
-//#include "base/Frame.h"
+#include "base/Frame.h"
 
 
 NSP_SLAM_LYJ_BEGIN
@@ -16,7 +16,8 @@ public:
 	{
 		POINT=0,
 		LINE,
-		EDGE
+		EDGE,
+		PATCH
 	};
 	MatcherAbr(TYPE _type) :type_(_type) {}
 	~MatcherAbr() {}

@@ -12,6 +12,7 @@ class ORBExtractor : public ExtractorAbr
 public:
 	struct Option
 	{
+		bool justFast = false;
 
 	};
 	ORBExtractor(Option _opt);

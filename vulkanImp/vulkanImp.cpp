@@ -44,7 +44,7 @@ static std::vector<char> readFile(const std::string& _filename) {
 	file.close();
 	return buffer;
 }
-static void createBuffer(VkDevice& _device, vks::Buffer& _buffer, VkPhysicalDeviceMemoryProperties& _deviceMemoryProperties, void* _data = nullptr)
+static void createBuffer(VkDevice& _device, vks::Buffer& _buffer, VkPhysicalDeviceMemoryProperties& _deviceMemoryProperties, bool _map=false, void* _data = nullptr)
 {
 	VkBufferCreateInfo bufferCreateInfo{};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -61,10 +61,12 @@ static void createBuffer(VkDevice& _device, vks::Buffer& _buffer, VkPhysicalDevi
 	memoryAllocateInfo.allocationSize = memoryRequires.size;
 	memoryAllocateInfo.memoryTypeIndex = getMemoryTypeIndex(memoryRequires.memoryTypeBits, _buffer.memoryPropertyFlags, _deviceMemoryProperties);
 	VK_CHECK_RESULT(vkAllocateMemory(_device, &memoryAllocateInfo, nullptr, &_buffer.memory));
-	VK_CHECK_RESULT(vkMapMemory(_device, _buffer.memory, 0, _buffer.size, 0, &_buffer.mapped));
-	if (_data != nullptr) {
-		memcpy(_buffer.mapped, _data, _buffer.size);
-		vkUnmapMemory(_device, _buffer.memory);
+	if (_map) {
+		VK_CHECK_RESULT(vkMapMemory(_device, _buffer.memory, 0, _buffer.size, 0, &_buffer.mapped));
+		if (_data != nullptr) {
+			memcpy(_buffer.mapped, _data, _buffer.size);
+			vkUnmapMemory(_device, _buffer.memory);
+		}
 	}
 	VK_CHECK_RESULT(vkBindBufferMemory(_device, _buffer.buffer, _buffer.memory, 0));
 	return;
@@ -158,7 +160,7 @@ void VulkanImp::compute() {
 		m_hostBuffer.size = bufferSize;
 		m_hostBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		m_hostBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-		createBuffer(m_device, m_hostBuffer, m_deviceMemoryProperties, computeInput.data());
+		createBuffer(m_device, m_hostBuffer, m_deviceMemoryProperties, true, computeInput.data());
 		VkMappedMemoryRange mappedRange;
 		mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		mappedRange.memory = m_hostBuffer.memory;
@@ -181,7 +183,7 @@ void VulkanImp::compute() {
 		m_hostBuffer2.size = bufferSize2;
 		m_hostBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		m_hostBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-		createBuffer(m_device, m_hostBuffer2, m_deviceMemoryProperties, computeInput2.data());
+		createBuffer(m_device, m_hostBuffer2, m_deviceMemoryProperties, true, computeInput2.data());
 		VkMappedMemoryRange mappedRange;
 		mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		mappedRange.memory = m_hostBuffer2.memory;
@@ -582,177 +584,7 @@ void VulkanImp::init() {
 		//if (image.channels() == 3)
 		//	cv::cvtColor(image, image, cv::COLOR_BGR2BGRA);
 
-#if false
-		const int width = image.cols;
-		const int height = image.rows;
-		VkDeviceSize imageSize = width * height * 4;
-		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingMemory;
-
-		VkBufferCreateInfo bufferCreateInfo{};
-		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferCreateInfo.size = imageSize;
-		// This buffer is used as a transfer source for the buffer copy
-		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		VK_CHECK_RESULT(vkCreateBuffer(m_device, &bufferCreateInfo, nullptr, &stagingBuffer));
-
-		VkMemoryAllocateInfo memAllocInfo{};
-		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		VkMemoryRequirements memReqs = {};
-		// Get memory requirements for the staging buffer (alignment, memory type bits)
-		vkGetBufferMemoryRequirements(m_device, stagingBuffer, &memReqs);
-		memAllocInfo.allocationSize = memReqs.size;
-		// Get memory type index for a host visible buffer
-		memAllocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_deviceMemoryProperties);
-		VK_CHECK_RESULT(vkAllocateMemory(m_device, &memAllocInfo, nullptr, &stagingMemory));
-		VK_CHECK_RESULT(vkBindBufferMemory(m_device, stagingBuffer, stagingMemory, 0));
-
-		// Copy texture data into host local staging buffer
-		uint8_t* data;
-		VK_CHECK_RESULT(vkMapMemory(m_device, stagingMemory, 0, memReqs.size, 0, (void**)&data));
-		memcpy(data, image.data, imageSize);
-		vkUnmapMemory(m_device, stagingMemory);
-
-		// Setup buffer copy regions for each mip level
-		std::vector<VkBufferImageCopy> bufferCopyRegions;
-		uint32_t offset = 0;
-
-		uint32_t minl = 1;
-		for (uint32_t i = 0; i < minl; i++) {
-			// Setup a buffer image copy structure for the current mip level
-			VkBufferImageCopy bufferCopyRegion = {};
-			bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			bufferCopyRegion.imageSubresource.mipLevel = i;
-			bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-			bufferCopyRegion.imageSubresource.layerCount = 1;
-			bufferCopyRegion.imageExtent.width = static_cast<uint32_t>(width) >> i;
-			bufferCopyRegion.imageExtent.height = static_cast<uint32_t>(height) >> i;
-			bufferCopyRegion.imageExtent.depth = 1;
-			bufferCopyRegion.bufferOffset = offset;
-			bufferCopyRegions.push_back(bufferCopyRegion);
-		}
-
-		// Create optimal tiled target image on the device
-		VkImageCreateInfo imageCreateInfo{};
-		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageCreateInfo.format = format;
-		imageCreateInfo.mipLevels = minl;
-		imageCreateInfo.arrayLayers = 1;
-		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		// Set initial layout of the image to undefined
-		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageCreateInfo.extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
-		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		VK_CHECK_RESULT(vkCreateImage(m_device, &imageCreateInfo, nullptr, &m_texture2D));
-
-		vkGetImageMemoryRequirements(m_device, m_texture2D, &memReqs);
-		memAllocInfo.allocationSize = memReqs.size;
-		memAllocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_deviceMemoryProperties);
-		VK_CHECK_RESULT(vkAllocateMemory(m_device, &memAllocInfo, nullptr, &m_texture2DMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(m_device, m_texture2D, m_texture2DMemory, 0));
-
-		VkCommandBufferAllocateInfo cmdBufAllocateInfo{};
-		cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufAllocateInfo.commandPool = m_graphicsCommandPool;
-		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufAllocateInfo.commandBufferCount = 1;
-		VkCommandBuffer copyCmd;
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_device, &cmdBufAllocateInfo, &copyCmd));
-		VkCommandBufferBeginInfo cmdBufBeginInfo{};
-		cmdBufBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		VK_CHECK_RESULT(vkBeginCommandBuffer(copyCmd, &cmdBufBeginInfo));
-
-		// Image memory barriers for the texture image
-
-		// The sub resource range describes the regions of the image that will be transitioned using the memory barriers below
-		VkImageSubresourceRange subResourceRange = {};
-		// Image only contains color data
-		subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		// Start at first mip level
-		subResourceRange.baseMipLevel = 0;
-		// We will transition on all mip levels
-		subResourceRange.levelCount = minl;
-		// The 2D texture only has one layer
-		subResourceRange.layerCount = 1;
-
-		// Transition the texture image layout to transfer target, so we can safely copy our buffer data to it.
-		VkImageMemoryBarrier imageMemoryBarrier{};
-		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageMemoryBarrier.image = m_texture2D;
-		imageMemoryBarrier.subresourceRange = subResourceRange;
-		imageMemoryBarrier.srcAccessMask = 0;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-		// Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
-		// Source pipeline stage is host write/read execution (VK_PIPELINE_STAGE_HOST_BIT)
-		// Destination pipeline stage is copy command execution (VK_PIPELINE_STAGE_TRANSFER_BIT)
-		vkCmdPipelineBarrier(
-			copyCmd,
-			VK_PIPELINE_STAGE_HOST_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &imageMemoryBarrier);
-
-		// Copy mip levels from staging buffer
-		vkCmdCopyBufferToImage(
-			copyCmd,
-			stagingBuffer,
-			m_texture2D,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			static_cast<uint32_t>(bufferCopyRegions.size()),
-			bufferCopyRegions.data());
-
-		// Once the data has been uploaded we transfer to the texture image to the shader read layout, so it can be sampled from
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		// Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
-		// Source pipeline stage is copy command execution (VK_PIPELINE_STAGE_TRANSFER_BIT)
-		// Destination pipeline stage fragment shader access (VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-		vkCmdPipelineBarrier(
-			copyCmd,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &imageMemoryBarrier);
-
-		// Store current layout for later reuse
-		m_textureLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(copyCmd));
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &copyCmd;
-		VkFenceCreateInfo fenceInfo{};
-		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags = 0;
-		VkFence fence;
-		VK_CHECK_RESULT(vkCreateFence(m_device, &fenceInfo, nullptr, &fence));
-		VK_CHECK_RESULT(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, fence));
-		VK_CHECK_RESULT(vkWaitForFences(m_device, 1, &fence, VK_TRUE, UINT64_MAX));
-
-		// Clean up staging resources
-		vkFreeMemory(m_device, stagingMemory, nullptr);
-		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-
-#else
 		const int width = image.cols;
 		const int height = image.rows;
 		VkDeviceSize imageSize = width * height * 4;
@@ -819,7 +651,6 @@ void VulkanImp::init() {
 		);
 
 		flushCommand(m_device, copyCmd, m_graphicsCommandPool, m_graphicsQueue, m_inFlightFence, true);
-#endif
 
 
 		VkSamplerCreateInfo samplerCreateInfo{};
@@ -866,11 +697,11 @@ void VulkanImp::init() {
 		m_vertexBufferTmp.size = vertices.size() * sizeof(Vertex);
 		m_vertexBufferTmp.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		m_vertexBufferTmp.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-		createBuffer(m_device, m_vertexBufferTmp, m_deviceMemoryProperties, vertices.data());
+		createBuffer(m_device, m_vertexBufferTmp, m_deviceMemoryProperties, true, vertices.data());
 		m_indexBufferTmp.size = indices.size() * sizeof(uint32_t);
 		m_indexBufferTmp.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		m_indexBufferTmp.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-		createBuffer(m_device, m_indexBufferTmp, m_deviceMemoryProperties, indices.data());
+		createBuffer(m_device, m_indexBufferTmp, m_deviceMemoryProperties, true, indices.data());
 		m_vertexBuffer.size = vertices.size() * sizeof(Vertex);
 		m_vertexBuffer.usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		m_vertexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
@@ -911,7 +742,7 @@ void VulkanImp::init() {
 			m_uniformBuffers[i].size = sizeof(ShaderData);
 			m_uniformBuffers[i].usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 			m_uniformBuffers[i].memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-			createBuffer(m_device, m_uniformBuffers[i], m_deviceMemoryProperties);
+			createBuffer(m_device, m_uniformBuffers[i], m_deviceMemoryProperties, true);
 		}
 		};
 	funcCreateUniformBuffers();
