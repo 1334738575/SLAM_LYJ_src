@@ -28,7 +28,7 @@ public:
 	~PointMatcher();
 
 	// Í¨¹ý MatcherAbr ¼Ì³Ð
-	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1) override;
+	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights) override;
 private:
 	Option opt_;
 	cv::Ptr<cv::DescriptorMatcher> descMatcher_;

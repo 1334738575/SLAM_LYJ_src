@@ -36,7 +36,7 @@ public:
 
 
 	// Í¨¹ý MatcherAbr ¼Ì³Ð
-	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1) override;
+	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights) override;
 
 	int matchPatch(const cv::Mat& _m1, std::vector<cv::KeyPoint>& _kps1,
 		const cv::Mat& _m2,	const bool _bGuass, 

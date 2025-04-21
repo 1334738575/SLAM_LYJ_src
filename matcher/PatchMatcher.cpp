@@ -10,7 +10,7 @@ PatchMatcher::PatchMatcher(Option _opt)
 }
 PatchMatcher::~PatchMatcher()
 {}
-int PatchMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1)
+int PatchMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights)
 {
 	const auto& kps1 = _frame1.getKeyPoints();
 	const auto& kps2 = _frame2.getKeyPoints();

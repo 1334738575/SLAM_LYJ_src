@@ -20,7 +20,7 @@ PointMatcher::~PointMatcher()
 {
 }
 
-int PointMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1)
+int PointMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights)
 {
 	_match2to1.assign(_frame1.getKeyPoints().size(), -1);
 	if (opt_.mode <= 0) {

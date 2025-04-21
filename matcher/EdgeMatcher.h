@@ -21,7 +21,7 @@ public:
 
 
 	// Í¨¹ý MatcherAbr ¼Ì³Ð
-	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1) override;
+	int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights) override;
 
 private:
 	Option opt_;
@@ -35,7 +35,7 @@ EdgeMatcher::~EdgeMatcher()
 {
 }
 
-int EdgeMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1)
+int EdgeMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights)
 {
 	const auto features1 = _frame1.getEdgeFeatures();
 	const auto features2 = _frame2.getEdgeFeatures();

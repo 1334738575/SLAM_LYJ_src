@@ -13,7 +13,7 @@ LineMatcher::~LineMatcher()
 {
 }
 
-int LineMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1)
+int LineMatcher::match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights)
 {
 	_match2to1.assign(_frame1.getKeyLines().size(), -1);
 	if (opt_.mode == LDB) {

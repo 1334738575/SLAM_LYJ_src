@@ -17,12 +17,14 @@ public:
 		POINT=0,
 		LINE,
 		EDGE,
-		PATCH
+		PATCH,
+		OPTICAL
 	};
 	MatcherAbr(TYPE _type) :type_(_type) {}
 	~MatcherAbr() {}
 
-	virtual int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1) = 0;
+	//_match2to1, size == 1, [ind] == 2
+	virtual int match(const Frame& _frame1, const Frame& _frame2, std::vector<int>& _match2to1, std::vector<float>& _weights) = 0;
 
 	TYPE getType() { return type_; }
 protected:
