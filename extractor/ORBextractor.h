@@ -44,7 +44,7 @@ namespace FROM_ORB_SLAM3
 	public:
 		ExtractorNode() : bNoMore(false) {}
 
-		void DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNode &n3, ExtractorNode &n4);
+		void DivideNode(ExtractorNode& n1, ExtractorNode& n2, ExtractorNode& n3, ExtractorNode& n4);
 
 		std::vector<cv::KeyPoint> vKeys;
 		cv::Point2i UL, UR, BL, BR;
@@ -62,7 +62,7 @@ namespace FROM_ORB_SLAM3
 		};
 
 		ORBextractor(int nfeatures, float scaleFactor, int nlevels,
-					 int iniThFAST, int minThFAST);
+			int iniThFAST, int minThFAST);
 
 		~ORBextractor() {}
 
@@ -70,8 +70,8 @@ namespace FROM_ORB_SLAM3
 		// ORB are dispersed on the image using an octree.
 		// Mask is ignored in the current implementation.
 		int operator()(cv::InputArray _image, cv::InputArray _mask,
-					   std::vector<cv::KeyPoint> &_keypoints,
-					   cv::OutputArray _descriptors, std::vector<int> &vLappingArea);
+			std::vector<cv::KeyPoint>& _keypoints,
+			cv::OutputArray _descriptors, std::vector<int>& vLappingArea);
 
 		int inline GetLevels()
 		{
@@ -107,11 +107,11 @@ namespace FROM_ORB_SLAM3
 
 	protected:
 		void ComputePyramid(cv::Mat image);
-		void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint>> &allKeypoints);
-		std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint> &vToDistributeKeys, const int &minX,
-													const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
+		void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint>>& allKeypoints);
+		std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int& minX,
+			const int& maxX, const int& minY, const int& maxY, const int& nFeatures, const int& level);
 
-		void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>> &allKeypoints);
+		void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& allKeypoints);
 		std::vector<cv::Point> pattern;
 
 		int nfeatures;
@@ -130,7 +130,7 @@ namespace FROM_ORB_SLAM3
 		std::vector<float> mvInvLevelSigma2;
 	};
 
-} // from ORB_SLAM
+}; // from ORB_SLAM
 
 NSP_SLAM_LYJ_END
 
