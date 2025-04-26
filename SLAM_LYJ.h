@@ -30,9 +30,9 @@ SLAM_LYJ_API void testBuffer();
 SLAM_LYJ_API void testGlobalOption();
 SLAM_LYJ_API void testFlann();
 SLAM_LYJ_API void testPCL();
-SLAM_LYJ_API void testQT();
 SLAM_LYJ_API void testPatchMatch();
 SLAM_LYJ_API void testDiffuser();
+SLAM_LYJ_API void testPolarGrid();
 
 SLAM_LYJ_API int getVersion();
 

@@ -22,6 +22,7 @@
 #include <ctime>   // for time()
 #include "matcher/PatchMatcher.h"
 #include <common/Diffuser.h>
+#include <common/PolarGrid.h>
 
 #include "debugger/debugger.h"
 
@@ -594,12 +595,38 @@ SLAM_LYJ_API void testPatchMatch()
     matcher.matchPatch(img1, kps2, img2, false, matches);
     return;
 }
-
 SLAM_LYJ_API void testDiffuser()
 {
     SLAM_LYJ_MATH::Diffuser2D diffuser(6, 8, std::vector<Eigen::Vector2i>(), Eigen::Vector2i(3, 3));
     std::vector<Eigen::Vector2i> locs;
     while(diffuser.next(locs)){}
+    return;
+}
+SLAM_LYJ_API void testPolarGrid()
+{
+    std::vector<float> rs(10, 0.1);
+    SLAM_LYJ_MATH::MultiPolarGrid<int> multiPolarGrid(rs, 0.1f, 0, PI / 2, PI);
+    {
+        uint32_t sss = multiPolarGrid.getTotalSize();
+        std::ofstream f("multiPolarGrid.txt");
+        Eigen::Vector3f loc;
+        for (uint32_t i = 0; i < sss; ++i) {
+            if (multiPolarGrid.getCoordInGridById(i, loc))
+                f << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+        }
+        f.close();
+    }
+    SLAM_LYJ_MATH::SoloPolarGrid<int> soloPolarGrid(2.0f, 0.1f, 0.1f, 0.1f, 0, PI/2, PI);
+    {
+        uint32_t sss = soloPolarGrid.getTotalSize();
+        std::ofstream f("soloPolarGrid.txt");
+        Eigen::Vector3f loc;
+        for (uint32_t i = 0; i < sss; ++i) {
+            if (soloPolarGrid.getCoordInGridById(i, loc))
+                f << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+        }
+        f.close();
+    }
     return;
 }
 
