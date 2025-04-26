@@ -25,9 +25,10 @@ public:
 	const std::vector<Eigen::Vector3f>& getVNormals() const;
 	const Eigen::Vector3f& getVNormal(uint32_t _id) const;
 	bool setVNormals(const std::vector<Eigen::Vector3f>& _vNormals);
+	bool setVNormal(uint32_t _id, const Eigen::Vector3f& _vNormal);
 
 
-private:
+protected:
 	std::vector<Eigen::Vector3f> m_vertexs;
 	bool m_enableVNr = false;
 	std::vector<Eigen::Vector3f> m_vNormals;

@@ -35,9 +35,13 @@ public:
 	std::vector<Eigen::Vector3f>& getFNormals();
 	const std::vector<Eigen::Vector3f>& getFNormals() const;
 	bool setFNormals(const std::vector<Eigen::Vector3f>& _fNormals);
+	bool setFNormal(uint32_t _id, const Eigen::Vector3f& _fNormal);
 	void calculateFNormals();
+	void enableFCenters();
+	void disableFCenters();
 	bool hasFCenters() const;
 	void setFCenters(const std::vector<Eigen::Vector3f>& _fCenters);
+	void setFCenter(uint32_t _id, const Eigen::Vector3f& _fCenter);
 	std::vector<Eigen::Vector3f>& getFCenters();
 	const std::vector<Eigen::Vector3f>& getFCenters() const;
 	const Eigen::Vector3f& getFCenter(uint32_t _id) const;
@@ -66,9 +70,63 @@ inline void BaseTriMesh::setFace(uint32_t _id, const BaseTriFace& _face)
 inline void BaseTriMesh::addFace(const BaseTriFace& _face)
 {
 	m_faces.push_back(_face);
-	if (m_enableFNr) {
+	//if (m_enableFNr) {
+	//	m_fNormals.resize(m_faces.size());
+	//}
+}
 
-	}
+inline std::vector<BaseTriFace>& BaseTriMesh::getFaces()
+{
+	// TODO: 在此处插入 return 语句
+	return m_faces;
+}
+
+inline const std::vector<BaseTriFace>& BaseTriMesh::getFaces() const
+{
+	// TODO: 在此处插入 return 语句
+	return m_faces;
+}
+
+inline const BaseTriFace& BaseTriMesh::getFace(uint32_t _id)
+{
+	// TODO: 在此处插入 return 语句
+	return m_faces[_id];
+}
+
+inline void BaseTriMesh::enableFNormals()
+{
+	m_fNormals.resize(m_faces.size());
+	memset(m_fNormals[0].data(), 0, m_faces.size() * 3 * sizeof(float));
+	m_enableFNr = true;
+}
+
+inline void BaseTriMesh::disableFNormals()
+{
+	m_enableFNr = false;
+	m_fNormals.swap(std::vector<Eigen::Vector3f>());
+}
+
+inline bool BaseTriMesh::isEnableFNormals() const
+{
+	return m_enableFNr;
+}
+
+inline void BaseTriMesh::enableFCenters()
+{
+	m_centers.resize(m_faces.size());
+	memset(m_centers[0].data(), 0, m_faces.size() * 3 * sizeof(float));
+	m_hasFCtr = true;
+}
+
+inline void BaseTriMesh::disableFCenters()
+{
+	m_hasFCtr = false;
+	m_centers.swap(std::vector<Eigen::Vector3f>());
+}
+
+inline bool BaseTriMesh::hasFCenters() const
+{
+	return m_hasFCtr;
 }
 
 

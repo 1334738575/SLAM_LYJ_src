@@ -34,6 +34,14 @@ bool Cloud::setVNormals(const std::vector<Eigen::Vector3f>& _vNormals)
 	return true;
 }
 
+bool Cloud::setVNormal(uint32_t _id, const Eigen::Vector3f& _vNormal)
+{
+	if (!m_enableVNr)
+		return false;
+	m_vNormals[_id] = _vNormal;
+	return true;
+}
+
 
 
 
