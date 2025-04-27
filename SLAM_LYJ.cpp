@@ -605,14 +605,39 @@ SLAM_LYJ_API void testDiffuser()
 SLAM_LYJ_API void testPolarGrid()
 {
     std::vector<float> rs(10, 0.1);
-    SLAM_LYJ_MATH::MultiPolarGrid<int> multiPolarGrid(rs, 0.1f, 0, PI / 2, PI);
+    SLAM_LYJ_MATH::MultiPolarGrid<int> multiPolarGrid(rs, 0.1f, 0, PI / 2, PI, 1);
     {
         uint32_t sss = multiPolarGrid.getTotalSize();
         std::ofstream f("multiPolarGrid.txt");
         Eigen::Vector3f loc;
         for (uint32_t i = 0; i < sss; ++i) {
-            if (multiPolarGrid.getCoordInGridById(i, loc))
+            if (multiPolarGrid.getCoordInGridById(i, loc)) {
                 f << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+                if (i == 1000) {
+                    Eigen::Matrix3f rot;
+                    Eigen::Vector3f trans;
+                    multiPolarGrid.getPoseInGridById(i, rot, trans);
+                    Pose3D pose(rot.cast<double>(), trans.cast<double>());
+                    //Pose3D invPose = pose.inversed();
+                    Pose3D invPose = pose;
+                    Eigen::Vector3d ax(0.5, 0, 0);
+                    Eigen::Vector3d ay(0, 0.5, 0);
+                    Eigen::Vector3d az(0, 0, 0.5);
+                    auto ax2 = invPose * ax;
+                    auto ay2 = invPose * ay;
+                    auto az2 = invPose * az;
+                    std::ofstream f2("transform.txt");
+                    f2 << 0 << "," << 0 << "," << 0 << std::endl;
+                    f2 << ax(0) << "," << ax(1) << "," << ax(2) << std::endl;
+                    f2 << ay(0) << "," << ay(1) << "," << ay(2) << std::endl;
+                    f2 << az(0) << "," << az(1) << "," << az(2) << std::endl;
+                    f2 << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+                    f2 << ax2(0) << "," << ax2(1) << "," << ax2(2) << std::endl;
+                    f2 << ay2(0) << "," << ay2(1) << "," << ay2(2) << std::endl;
+                    f2 << az2(0) << "," << az2(1) << "," << az2(2) << std::endl;
+                    f2.close();
+                }
+            }
         }
         f.close();
     }

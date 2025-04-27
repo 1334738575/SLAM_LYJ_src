@@ -125,6 +125,33 @@ public:
             return false;
         return true;
     }
+    virtual bool getPoseInGridByPolar(const Scalar _r, const Scalar _theta, const Scalar _fi, Matrix3& _rot, Vector3& _trans) const {
+        if (!isPolarInGrid(_r, _theta, _fi))
+            return false;
+        convertPolar2Pose(_r, _theta, _fi, _rot, _trans);
+        return true;
+    }
+    virtual bool getPoseInGridByCoord(const Vector3& _coord, Matrix3& _rot, Vector3& _trans) const {
+        if (!isCoordInGrid(_coord))
+            return false;
+        convertPolar2Pose(_coord, _rot, _trans);
+        return true;
+    }
+    virtual bool getPoseInGridByInd(const uint32_t _rInd, const uint32_t _thetaInd, const uint32_t _fiInd, Matrix3& _rot, Vector3& _trans) const {
+        Scalar r, theta, fi;
+        if (!getPolarInGridByInd(_rInd, _thetaInd, _fiInd, r, theta, fi))
+            return false;
+        convertPolar2Pose(r, theta, fi, _rot, _trans);
+        return true;
+    }
+    virtual bool getPoseInGridById(const uint32_t& _id, Matrix3& _rot, Vector3& _trans) const {
+        Scalar r, theta, fi;
+        if (!getPolarInGridById(_id, r, theta, fi))
+            return false;
+        convertPolar2Pose(r, theta, fi, _rot, _trans);
+        return true;
+    }
+    //virtual void getAroundIdByCoord(const Vector3& _coord, std::vector<uint32_t>& _ids) const = 0;
 
     static void convertCoord2Ploar(const Vector3 &_coord, Scalar &_r, Scalar &_theta, Scalar &_fi) {
         _r = _coord.norm();
@@ -148,6 +175,18 @@ public:
         Vector3 axisFi(0, 0, 1);
         Matrix3 rotFi = Rodrigues2RotMatrix<Scalar>(axisFi, invFi);
         Scalar invTheta = PI - _theta;
+        Vector3 axisTheta(0, 1, 0);
+        Matrix3 rotTheta = Rodrigues2RotMatrix<Scalar>(axisTheta, invTheta);
+        _rot = rotFi * rotTheta;
+    }
+    static void convertPolar2Pose(const Vector3& _coord, Matrix3& _rot, Vector3& _trans) {
+        _trans = _coord;
+        Scalar r, theta, fi;
+        convertCoord2Ploar(_coord, r, theta, fi);
+        Scalar invFi = fi + PI;
+        Vector3 axisFi(0, 0, 1);
+        Matrix3 rotFi = Rodrigues2RotMatrix<Scalar>(axisFi, invFi);
+        Scalar invTheta = PI - theta;
         Vector3 axisTheta(0, 1, 0);
         Matrix3 rotTheta = Rodrigues2RotMatrix<Scalar>(axisTheta, invTheta);
         _rot = rotTheta * rotFi;
