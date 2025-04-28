@@ -610,10 +610,11 @@ SLAM_LYJ_API void testPolarGrid()
         uint32_t sss = multiPolarGrid.getTotalSize();
         std::ofstream f("multiPolarGrid.txt");
         Eigen::Vector3f loc;
+        bool sign = true;
         for (uint32_t i = 0; i < sss; ++i) {
             if (multiPolarGrid.getCoordInGridById(i, loc)) {
                 f << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
-                if (i == 1000) {
+                if (i == 1000 && false) {
                     Eigen::Matrix3f rot;
                     Eigen::Vector3f trans;
                     multiPolarGrid.getPoseInGridById(i, rot, trans);
@@ -637,6 +638,17 @@ SLAM_LYJ_API void testPolarGrid()
                     f2 << az2(0) << "," << az2(1) << "," << az2(2) << std::endl;
                     f2.close();
                 }
+                if (sign) {
+                    std::vector<uint32_t> ids;
+                    multiPolarGrid.getAroundIdByCoord(loc, 2, ids);
+                    std::ofstream f2("nearPolarGrid2.txt");
+                    for (const auto& id : ids) {
+                        multiPolarGrid.getCoordInGridById(id, loc);
+                        f2 << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+                    }
+                    f2.close();
+                    sign = false;
+                }
             }
         }
         f.close();
@@ -646,9 +658,22 @@ SLAM_LYJ_API void testPolarGrid()
         uint32_t sss = soloPolarGrid.getTotalSize();
         std::ofstream f("soloPolarGrid.txt");
         Eigen::Vector3f loc;
+        bool sign = true;
         for (uint32_t i = 0; i < sss; ++i) {
-            if (soloPolarGrid.getCoordInGridById(i, loc))
+            if (soloPolarGrid.getCoordInGridById(i, loc)) {
                 f << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+                if (sign) {
+                    std::vector<uint32_t> ids;
+                    soloPolarGrid.getAroundIdByCoord(loc, 2, ids);
+                    std::ofstream f2("nearPolarGrid.txt");
+                    for (const auto& id : ids) {
+                        soloPolarGrid.getCoordInGridById(id, loc);
+                        f2 << loc(0) << "," << loc(1) << "," << loc(2) << std::endl;
+                    }
+                    f2.close();
+                    sign = false;
+                }
+            }
         }
         f.close();
     }

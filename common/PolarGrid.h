@@ -151,7 +151,7 @@ public:
         convertPolar2Pose(r, theta, fi, _rot, _trans);
         return true;
     }
-    //virtual void getAroundIdByCoord(const Vector3& _coord, std::vector<uint32_t>& _ids) const = 0;
+    virtual void getAroundIdByCoord(const Vector3& _coord, uint32_t _level, std::vector<uint32_t>& _ids) const = 0;
 
     static void convertCoord2Ploar(const Vector3 &_coord, Scalar &_r, Scalar &_theta, Scalar &_fi) {
         _r = _coord.norm();
@@ -169,6 +169,14 @@ public:
         _coord(1) = _r * sin(_theta) * sin(_fi);
         _coord(2) = _r * cos(_theta);
     };
+    /// <summary>
+    /// gird to local voxel
+    /// </summary>
+    /// <param name="_r"></param>
+    /// <param name="_theta"></param>
+    /// <param name="_fi"></param>
+    /// <param name="_rot"></param>
+    /// <param name="_trans"></param>
     static void convertPolar2Pose(const Scalar _r, const Scalar _theta, const Scalar _fi, Matrix3& _rot, Vector3& _trans) {
         convertPolar2Coord(_r, _theta, _fi, _trans);
         Scalar invFi = _fi + PI;
@@ -189,7 +197,7 @@ public:
         Scalar invTheta = PI - theta;
         Vector3 axisTheta(0, 1, 0);
         Matrix3 rotTheta = Rodrigues2RotMatrix<Scalar>(axisTheta, invTheta);
-        _rot = rotTheta * rotFi;
+        _rot = rotFi * rotTheta;
     }
 };
 
@@ -204,6 +212,8 @@ protected:
     //uint32_t indRSize_ = 0;
     uint32_t indThetaSize_ = 0;
     uint32_t indFiSize_ = 0;
+
+    static std::vector<Eigen::Vector3i> nearLocs_;
 
 public:
     SoloPolarGrid(Scalar _maxR, 
@@ -288,6 +298,43 @@ public:
             return false;
         return true;
     }
+    //使用了int，后续可能会有溢出问题
+    void getAroundIdByCoord(const Vector3& _coord, uint32_t _level, std::vector<uint32_t>& _ids) const {
+        _ids.clear();
+        uint32_t indR, indTheta, indFi;
+        if (!getIndInGridByCoord(_coord, indR, indTheta, indFi))
+            return;
+        //buffer
+        std::queue<Eigen::Vector3i> inds;
+        std::unordered_set<uint32_t> ids;
+        uint32_t id;
+        uint32_t size = 0;
+        uint32_t i = 0;
+        uint32_t j = 0;
+        Eigen::Vector3i ind;
+        Eigen::Vector3i ind2;
+        getIdInGridByInd(indR, indTheta, indFi, id);
+        ids.insert(id);
+        inds.push(Eigen::Vector3i(indR, indTheta, indFi));
+        while (_level > 0) {
+            size = inds.size();
+            for (i = 0; i < size; ++i) {
+                ind = inds.front();
+                inds.pop();
+                for (j = 0; j < nearLocs_.size(); ++j) {
+                    ind2 = ind + nearLocs_[j];
+                    if (!getIdInGridByInd(ind2(0), ind2(1), ind2(2), id) || ids.count(id))
+                        continue;
+                    ids.insert(id);
+                    inds.push(ind2);
+                }
+            }
+            --_level;
+        }
+        _ids.reserve(ids.size());
+        for (auto& id : ids)
+            _ids.push_back(id);
+    }
 
 protected:
     bool getIndRInGrid(Scalar _r, uint32_t& _indR) const {
@@ -333,7 +380,12 @@ protected:
         return true;
     }
 };
-
+template<typename T>
+std::vector<Eigen::Vector3i> SoloPolarGrid<T>::nearLocs_ = { \
+Eigen::Vector3i(-1, 0, 0), Eigen::Vector3i(1, 0, 0), \
+Eigen::Vector3i(0, -1, 0), Eigen::Vector3i(0, 1, 0), \
+Eigen::Vector3i(0, 0, -1), Eigen::Vector3i(0, 0, 1), \
+};
 
 
 template<typename T>
@@ -348,6 +400,7 @@ protected:
     std::vector<uint32_t> indThetaSizes_;
     std::vector<uint32_t> indFiSizes_;
 
+    static std::vector<Eigen::Vector3i> nearLocs_;
 public:
     MultiPolarGrid(
         std::vector<Scalar> _stepRs, Scalar _stepL,
@@ -486,6 +539,67 @@ public:
             return false;
         return true;
     }
+    void getAroundIdByCoord(const Vector3& _coord, uint32_t _level, std::vector<uint32_t>& _ids) const {
+        _ids.clear();
+        uint32_t indR, indTheta, indFi;
+        if (!getIndInGridByCoord(_coord, indR, indTheta, indFi))
+            return;
+        //buffer
+        std::queue<Eigen::Vector3i> inds;
+        std::unordered_set<uint32_t> ids;
+        uint32_t id;
+        uint32_t size = 0;
+        uint32_t i = 0;
+        uint32_t j = 0;
+        Eigen::Vector3i ind;
+        Eigen::Vector3i ind2;
+        Scalar r, theta, fi;
+        Scalar r2, theta2, fi2;
+        getIdInGridByInd(indR, indTheta, indFi, id);
+        ids.insert(id);
+        inds.push(Eigen::Vector3i(indR, indTheta, indFi));
+        while (_level > 0) {
+            size = inds.size();
+            for (i = 0; i < size; ++i) {
+                ind = inds.front();
+                inds.pop();
+                for (j = 0; j < nearLocs_.size(); ++j) {
+                    ind2 = ind + nearLocs_[j];
+                    if (!getIdInGridByInd(ind2(0), ind2(1), ind2(2), id) || ids.count(id))
+                        continue;
+                    ids.insert(id);
+                    inds.push(ind2);
+                }
+                getPolarInGridByInd(ind(0), ind(1), ind(2), r, theta, fi);
+                r2 = r;
+                theta2 = theta;
+                fi2 = fi;
+                if (ind(0) + 1 <= stepRs_.size()) {
+                    r2 += stepRs_[ind(0)];
+                    getIndInGridByPolar(r2, theta2, fi2, indR, indTheta, indFi);
+                    if (!getIdInGridByInd(indR, indTheta, indFi, id) || ids.count(id))
+                        continue;
+                    ids.insert(id);
+                    inds.push(Eigen::Vector3i(indR, indTheta, indFi));
+                }
+                r2 = r;
+                theta2 = theta;
+                fi2 = fi;
+                if (ind(0) - 1 >= 0) {
+                    r2 -= stepRs_[ind(0) - 1];
+                    getIndInGridByPolar(r2, theta2, fi2, indR, indTheta, indFi);
+                    if (!getIdInGridByInd(indR, indTheta, indFi, id) || ids.count(id))
+                        continue;
+                    ids.insert(id);
+                    inds.push(Eigen::Vector3i(indR, indTheta, indFi));
+                }
+            }
+            --_level;
+        }
+        _ids.reserve(ids.size());
+        for (auto& id : ids)
+            _ids.push_back(id);
+    }
 
 protected:
     bool getIndRInGrid(Scalar _r, uint32_t& _indR) const {
@@ -540,6 +654,11 @@ protected:
         _fi += (stepFis_[_indR] / 2);
         return true;
     }
+};
+template<typename T>
+std::vector<Eigen::Vector3i> MultiPolarGrid<T>::nearLocs_ = { \
+Eigen::Vector3i(0, -1, 0), Eigen::Vector3i(0, 1, 0), \
+Eigen::Vector3i(0, 0, -1), Eigen::Vector3i(0, 0, 1), \
 };
 
 NSP_SLAM_LYJ_MATH_END
