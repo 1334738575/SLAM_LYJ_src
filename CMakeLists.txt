@@ -142,6 +142,7 @@ if(MULTI_DLL EQUAL 0)
         ${Boost_LIBRARIES}
         ${PCL_LIBRARIES}
         Qt5::Core Qt5::Gui Qt5::Widgets
+        ${GLEW_LIBRARIES}
     )
 else()
     # message(FATAL_ERROR "multi")
