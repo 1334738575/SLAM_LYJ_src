@@ -23,6 +23,7 @@
 #include "matcher/PatchMatcher.h"
 #include <common/Diffuser.h>
 #include <common/PolarGrid.h>
+//#include <cudaImp/CUDAProjector.h>
 
 #include "debugger/debugger.h"
 
@@ -677,6 +678,33 @@ SLAM_LYJ_API void testPolarGrid()
         }
         f.close();
     }
+    return;
+}
+SLAM_LYJ_API void testCUDA()
+{
+    //move to thirdparty
+    //int sz = 100;
+    //int szBit = sz * sizeof(int);
+    //std::vector<int> as(100, 0);
+    //std::vector<int> bs(100, 1);
+    //std::vector<int> cs(100, 0);
+    //int* asDev;
+    //int* bsDev;
+    //int* csDev;
+    //cudaMalloc((void**)&asDev, szBit);
+    //cudaMalloc((void**)&bsDev, szBit);
+    //cudaMalloc((void**)&csDev, szBit);
+    //cudaMemcpy(asDev, as.data(), szBit, cudaMemcpyHostToDevice);
+    //cudaMemcpy(bsDev, bs.data(), szBit, cudaMemcpyHostToDevice);
+
+    //SLAM_LYJ_CUDA::testCUDA(asDev, bsDev, csDev, sz);
+
+    //cudaMemcpy(cs.data(), csDev, szBit, cudaMemcpyDeviceToHost);
+
+    //for (int i = 0; i < sz; ++i)
+    //{
+    //    std::cout << cs[i] << std::endl;
+    //}
     return;
 }
 

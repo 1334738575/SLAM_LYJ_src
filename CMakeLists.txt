@@ -31,6 +31,10 @@ file(GLOB SLAM_LYJ_BASE
 file(GLOB SLAM_LYJ_COMMON
     common/*.h
     common/*.cpp)
+file(GLOB SLAM_LYJ_CUDA
+    # cudaImp/*.h
+    # cudaImp/*.cu
+    )
 file(GLOB SLAM_LYJ_VULKAN
     vulkanImp/*.h
     vulkanImp/*.cpp)
@@ -63,6 +67,7 @@ file(GLOB SLAM_LYJ_VULKAN_TRIANGLE_SHADER
     vulkanImp/shader/triangle/*.vert)
 source_group(base/${_source_path_msvc} FILES ${SLAM_LYJ_BASE})
 source_group(common/${_source_path_msvc} FILES ${SLAM_LYJ_COMMON})
+source_group(cudaImp/${_source_path_msvc} FILES ${SLAM_LYJ_CUDA})
 source_group(vulkanImp/${_source_path_msvc} FILES ${SLAM_LYJ_VULKAN})
 source_group(extractor/${_source_path_msvc} FILES ${SLAM_LYJ_EXTRACTOR})
 source_group(matcher/${_source_path_msvc} FILES ${SLAM_LYJ_MATCHER})
@@ -131,6 +136,9 @@ if(MULTI_DLL EQUAL 0)
         ${SLAM_LYJ_PROCESSOR}
         ${SLAM_LYJ_DEBUGGER}
         ${SLAM_LYJ_OUT}
+        ${SLAM_LYJ_CUDA}
+        ${SLAM_LYJ_VULKAN_TEXTURE_SHADER}
+        ${SLAM_LYJ_VULKAN_TRIANGLE_SHADER}
         )
 
     target_link_libraries(${PROJECT_NAME} 
@@ -143,6 +151,7 @@ if(MULTI_DLL EQUAL 0)
         ${PCL_LIBRARIES}
         Qt5::Core Qt5::Gui Qt5::Widgets
         ${GLEW_LIBRARIES}
+        ${CUDA_LIBRARIES}
     )
 else()
     # message(FATAL_ERROR "multi")
