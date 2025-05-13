@@ -3,22 +3,20 @@
 
 #include "base/base.h"
 
-
 NSP_SLAM_LYJ_MATH_BEGIN
 
-
 /// <summary>
-///	leftfrontup x<0 y>0 z>0, 
+///	leftfrontup x<0 y>0 z>0,
 /// rightfrontup x>=0 y>=0 z>=0,
 /// rightbackup x>0 y<0 z>0,
-/// leftbackup x<0 y<0 z>0, 
+/// leftbackup x<0 y<0 z>0,
 /// leftfrontdown x<0 y>0 z<0,
 /// rightfrontdown x>0 y>0 z<0,
 /// rightbackdown x>0 y<0 z<0,
 /// leftbackdown x<=0 y<=0 z<=0
 /// </summary>
 /// <typeparam name="T"></typeparam>
-template<typename T>
+template <typename T>
 class OcTree
 {
 public:
@@ -28,25 +26,36 @@ public:
 	{
 		Vector3 c;
 		bool isLeaf = false;
-		Node* lfu = nullptr;
-		Node* rfu = nullptr;
-		Node* rbu = nullptr;
-		Node* lbu = nullptr;
-		Node* lfd = nullptr;
-		Node* rfd = nullptr;
-		Node* rbd = nullptr;
-		Node* lbd = nullptr;
-		//std::vector<int> ids;
+		Node *lfu = nullptr;
+		Node *rfu = nullptr;
+		Node *rbu = nullptr;
+		Node *lbu = nullptr;
+		Node *lfd = nullptr;
+		Node *rfd = nullptr;
+		Node *rbd = nullptr;
+		Node *lbd = nullptr;
+		std::vector<int> ids;
+		Vector3 lfuP;
+		Vector3 rfuP;
+		Vector3 rbuP;
+		Vector3 lbuP;
+		Vector3 lfdP;
+		Vector3 rfdP;
+		Vector3 rbdP;
+		Vector3 lbdP;
 
-		void build(const std::vector<Vector3>& _vs, const std::vector<int>& _ids,
-			const Vector3& _lbd, const Vector3& _rfu) {
+		void build(const std::vector<Vector3> &_vs, const std::vector<int> &_ids,
+				   const Vector3 &_lbd, const Vector3 &_rfu)
+		{
 			if (_vs.empty() || _ids.empty())
 				return;
 			c = (_lbd + _rfu) / 2;
-			//ids = _ids;
+			// ids = _ids;
 			int len = _ids.size();
-			if (len == 1) {
+			if (len == 1)
+			{
 				isLeaf = true;
+				ids = _ids;
 				return;
 			}
 			std::vector<int> lfuVs;
@@ -84,127 +93,175 @@ public:
 				else if (_vs[_ids[i]](0) <= c(0) && _vs[_ids[i]](1) <= c(1) && _vs[_ids[i]](2) <= c(2))
 					lbdVs.push_back(_ids[i]);
 			}
-			if (!lfuVs.empty()) {
+			if (!lfuVs.empty())
+			{
 				lfu = new Node();
 				lfu->build(_vs, lfuVs, Vector3(_lbd(0), c(1), c(2)), Vector3(c(0), _rfu(1), _rfu(2)));
 			}
-			if (!rfuVs.empty()) {
+			if (!rfuVs.empty())
+			{
 				rfu = new Node();
 				rfu->build(_vs, rfuVs, c, _rfu);
 			}
-			if (!rbuVs.empty()) {
+			if (!rbuVs.empty())
+			{
 				rbu = new Node();
 				rbu->build(_vs, rbuVs, Vector3(c(0), _lbd(1), c(2)), Vector3(_rfu(0), c(1), _rfu(2)));
 			}
-			if (!lbuVs.empty()) {
+			if (!lbuVs.empty())
+			{
 				lbu = new Node();
 				lbu->build(_vs, lbuVs, Vector3(_lbd(0), _lbd(1), c(2)), Vector3(c(0), c(1), _rfu(2)));
 			}
-			if (!lfdVs.empty()) {
+			if (!lfdVs.empty())
+			{
 				lfd = new Node();
 				lfd->build(_vs, lfdVs, Vector3(_lbd(0), c(1), _lbd(2)), Vector3(c(0), _rfu(1), c(2)));
 			}
-			if (!rfdVs.empty()) {
+			if (!rfdVs.empty())
+			{
 				rfd = new Node();
 				rfd->build(_vs, rfdVs, Vector3(c(0), c(1), _lbd(2)), Vector3(_rfu(0), _rfu(1), c(2)));
 			}
-			if (!rbdVs.empty()) {
+			if (!rbdVs.empty())
+			{
 				rbd = new Node();
 				rbd->build(_vs, rbdVs, Vector3(c(0), _lbd(1), _lbd(2)), Vector3(_rfu(0), c(1), c(2)));
 			}
-			if (!lbdVs.empty()) {
+			if (!lbdVs.empty())
+			{
 				lbd = new Node();
 				lbd->build(_vs, lbdVs, _lbd, c);
 			}
 		}
 
-		void release() {
-			//vs.swap(std::vector<V*>());
-			//if (isLeaf) {
+		void release()
+		{
+			// vs.swap(std::vector<V*>());
+			// if (isLeaf) {
 			//	vs.swap(std::vector<V>());
 			//	return;
-			//}
-			if (lu) {
-				lu->release();
-				delete lu;
+			// }
+			if (lfu)
+			{
+				lfu->release();
+				delete lfu;
 			}
-			if (ru) {
-				ru->release();
-				delete ru;
+			if (rfu)
+			{
+				rfu->release();
+				delete rfu;
 			}
-			if (ld) {
-				ld->release();
-				delete ld;
+			if (rbu)
+			{
+				rbu->release();
+				delete rbu;
 			}
-			if (rd) {
-				rd->release();
-				delete rd;
+			if (lbu)
+			{
+				lbu->release();
+				delete lbu;
+			}
+			if (lfd)
+			{
+				lfd->release();
+				delete lfd;
+			}
+			if (rfd)
+			{
+				rfd->release();
+				delete rfd;
+			}
+			if (rbd)
+			{
+				rbd->release();
+				delete rbd;
+			}
+			if (lbd)
+			{
+				lbd->release();
+				delete lbd;
 			}
 		}
 
-		bool hit(const Vector3& _v) {
-			if (_v(0) < c(0) && _v(1) > c(1) && _v(2) > c(2)) {
+		bool hit(const Vector3 &_v)
+		{
+			if (isLeaf)
+				return true;
+			if (_v(0) < c(0) && _v(1) > c(1) && _v(2) > c(2))
+			{
 				if (lfu)
 					return lfu->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) >= c(0) && _v(1) >= c(1) && _v(2) >= c(2)) {
+			else if (_v(0) >= c(0) && _v(1) >= c(1) && _v(2) >= c(2))
+			{
 				if (rfu)
 					return rfu->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) > c(0) && _v(1) < c(1) && _v(2) > c(2)) {
+			else if (_v(0) > c(0) && _v(1) < c(1) && _v(2) > c(2))
+			{
 				if (rbu)
 					return rbu->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) < c(0) && _v < c(1) && _v(2) > c(2)) {
+			else if (_v(0) < c(0) && _v(1) < c(1) && _v(2) > c(2))
+			{
 				if (lbu)
 					return lbu->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) < c(0) && _v(1) > c(1) && _v(2) < c(2)) {
+			else if (_v(0) < c(0) && _v(1) > c(1) && _v(2) < c(2))
+			{
 				if (lfd)
 					return lfd->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) > c(0) && _v(1) > c(1) && _v(2) < c(2)) {
+			else if (_v(0) > c(0) && _v(1) > c(1) && _v(2) < c(2))
+			{
 				if (rfd)
 					return rfd->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) > c(0) && _v(1) < c(1) && _v(2) < c(2)) {
+			else if (_v(0) > c(0) && _v(1) < c(1) && _v(2) < c(2))
+			{
 				if (rbd)
 					return rbd->hit(_v);
 				else
 					return false;
 			}
-			else if (_v(0) <= c(0) && _v <= c(1) && _v(2) <= c(2)) {
+			else if (_v(0) <= c(0) && _v(1) <= c(1) && _v(2) <= c(2))
+			{
 				if (lbd)
 					return lbd->hit(_v);
 				else
 					return false;
 			}
+			return false;
 		}
 	};
 
 	OcTree() {};
 	~OcTree() {};
 
-	void build(const std::vector<Vector3>& _vs) {
-		if (root) {
+	void build(const std::vector<Vector3> &_vs)
+	{
+		if (root)
+		{
 			root->release();
 			delete root;
 			root = nullptr;
 		}
 		if (_vs.empty())
 			return;
+		vs = _vs;
 		Vector3 lbd = _vs[0];
 		Vector3 rfu = _vs[0];
 		int len = _vs.size();
@@ -229,28 +286,70 @@ public:
 		root->build(_vs, ids, lbd, rfu);
 	}
 
-	void release() {
-		if (root) {
+	void release()
+	{
+		if (root)
+		{
 			root->release();
 			delete root;
 		}
 	}
 
-	bool hit(const Vector3& _v) {
+	bool hit(const Vector3 &_v)
+	{
 		if (root)
 			return root->hit(_v);
 		return false;
 	}
 
+	void toBaseTriMesh(std::vector<Eigen::Vector3f> &_ps, std::vector<Eigen::Vector3i> &_faces)
+	{
+		_ps.clear();
+		_faces.clear();
+		if (root == nullptr)
+			return;
+		std::queue<Node *> nodes;
+		nodes.push(root);
+		Eigen::Vector3f pTmp;
+		int s = nodes.size();
+		while (!nodes.empty())
+		{
+			/* code */
+			s = nodes.size();
+			for (int i = 0; i < s; ++i)
+			{
+				/* code */
+				Node *node = nodes.front();
+				nodes.pop();
+				pTmp = node->c.cast<float>();
+				_ps.push_back(pTmp);
+				if (node->isLeaf)
+					continue;
+				if (node->lfu)
+					nodes.push_back(node->lfu);
+				if (node->rfu)
+					nodes.push_back(node->rfu);
+				if (node->rbu)
+					nodes.push_back(node->rbu);
+				if (node->lbu)
+					nodes.push_back(node->lbu);
+				if (node->lfd)
+					nodes.push_back(node->lfd);
+				if (node->rfd)
+					nodes.push_back(node->rfd);
+				if (node->rbd)
+					nodes.push_back(node->rbd);
+				if (node->lbd)
+					nodes.push_back(node->lbd);
+			}
+		}
+	}
+
 private:
-	//std::vector<Vector2> vs;
-	Node* root = nullptr;
+	std::vector<Vector2> vs;
+	Node *root = nullptr;
 };
 
-
-
-
 NSP_SLAM_LYJ_MATH_END
-
 
 #endif // !SLAM_LYJ_OCTREE_H

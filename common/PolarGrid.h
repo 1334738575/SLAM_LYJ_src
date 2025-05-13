@@ -249,9 +249,9 @@ public:
         maxR_ = _maxR + _stepR;
         maxTheta_ = _maxTheta;
         maxFi_ = _maxFi;
-        indRSize_ = (maxR_ - minR_) / stepR_ + 1;
-        indThetaSize_ = (maxTheta_ - minTheta_) / stepTheta_ + 1;
-        indFiSize_ = (maxFi_ - minFi_) / stepFi_ + 1;
+        indRSize_ = (maxR_ - minR_) / stepR_;
+        indThetaSize_ = (maxTheta_ - minTheta_) / stepTheta_;
+        indFiSize_ = (maxFi_ - minFi_) / stepFi_;
         totalSize_ = indRSize_ * indThetaSize_ * indFiSize_;
         datas_.resize(totalSize_);
         for (auto &data : datas_)
