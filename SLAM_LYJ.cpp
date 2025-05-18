@@ -23,6 +23,8 @@
 #include "matcher/PatchMatcher.h"
 #include <common/Diffuser.h>
 #include <common/PolarGrid.h>
+#include <common/OcTree.h>
+#include <common/QuadTree.h>
 //#include <cudaImp/CUDAProjector.h>
 
 #include "debugger/debugger.h"
@@ -678,6 +680,14 @@ SLAM_LYJ_API void testPolarGrid()
         }
         f.close();
     }
+    return;
+}
+SLAM_LYJ_API void testOcTreeAndQuadTree()
+{
+    SLAM_LYJ_MATH::OcTreed tree1;
+    SLAM_LYJ_MATH::OcTreef tree2;
+    SLAM_LYJ_MATH::QuadTreed tree3;
+    SLAM_LYJ_MATH::QuadTreef tree4;
     return;
 }
 SLAM_LYJ_API void testCUDA()

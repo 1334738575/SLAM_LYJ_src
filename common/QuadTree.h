@@ -178,7 +178,8 @@ private:
 	Node* root = nullptr;
 };
 
-
+using QuadTreed = QuadTree<double>;
+using QuadTreef = QuadTree<float>;
 
 
 NSP_SLAM_LYJ_MATH_END

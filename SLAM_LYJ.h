@@ -33,6 +33,7 @@ SLAM_LYJ_API void testPCL();
 SLAM_LYJ_API void testPatchMatch();
 SLAM_LYJ_API void testDiffuser();
 SLAM_LYJ_API void testPolarGrid();
+SLAM_LYJ_API void testOcTreeAndQuadTree();
 SLAM_LYJ_API void testCUDA();
 
 SLAM_LYJ_API int getVersion();
