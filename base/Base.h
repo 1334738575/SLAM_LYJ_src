@@ -58,6 +58,13 @@ typedef Eigen::Matrix<float, 3, 4> Matrix3x4f;
 #define SLAM_LYJ_API
 #endif
 
+#define SLAM_LYJ_CHECKI(ret)                                                          \
+    if (ret != 0)                                                                     \
+    {                                                                                 \
+        fprintf(stderr, "Error: %d, {File: %s, Line:%d}\n", ret, __FILE__, __LINE__); \
+        return false;                                                                 \
+    }
+
 // namespace
 #define NSP_SLAM_LYJ_BEGIN \
     namespace SLAM_LYJ     \
