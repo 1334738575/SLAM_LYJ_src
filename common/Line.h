@@ -417,7 +417,7 @@ struct Line3 {
 
         TYPE w1 = std::cos(phi);
         TYPE w2 = std::sin(phi);
-        TYPEv d = w1 / w2;      // 原点到直线的距离
+        TYPE d = w1 / w2;      // 原点到直线的距离
 
         line.head(3) = -R.col(2) * d;
         line.tail(3) = R.col(1);

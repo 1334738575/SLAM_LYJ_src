@@ -253,6 +253,7 @@ endif()
 
 # show as a folder
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${PROJECT_NAME})
+target_compile_definitions(${PROJECT_NAME} PRIVATE SLAM_LYJ_API_EXPORTS)
 
 
 if(DEFINED LIBRARY_LYJ_OUTPUT_PATH)
