@@ -1,9 +1,16 @@
+#ifndef SLAM_LYJ_KMEANS_H
+#define SLAM_LYJ_KMEANS_H
+
 #include <iostream>
 #include <vector>
 #include <random>
 #include <cmath>
 #include <limits>
 #include <algorithm>
+
+#include "common/CommonAlgorithm.h"
+
+NSP_SLAM_LYJ_MATH_BEGIN
 
 class KMeans
 {
@@ -181,3 +188,8 @@ std::vector<std::vector<double>> generate_sample_data(int samples, int clusters)
 
 //     return 0;
 // }
+
+
+NSP_SLAM_LYJ_MATH_END
+
+#endif
