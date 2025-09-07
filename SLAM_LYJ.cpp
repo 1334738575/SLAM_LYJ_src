@@ -13,7 +13,7 @@
 #include "extractor/LSDextractor.h"
 #include "extractor/Cannyextractor.h"
 #include "extractor/SIFTextractor.h"
-#include "STLPlus/include/file_system.h"
+#include "thirdParty/STLPlus/include/file_system.h"
 #include <flann/flann.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
