@@ -17,7 +17,7 @@ public:
 
 
     //@override
-    bool extractFeature(std::vector<Frame*> _frames){ return true;}
+    //bool extractFeature(std::vector<Frame*> _frames){ return true;}
 };
 
 

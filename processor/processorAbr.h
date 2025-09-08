@@ -1,7 +1,7 @@
 #ifndef SLAM_LYJ_PROCESSORABR_H
 #define SLAM_LYJ_PROCESSORABR_H
 
-#include "base/Frame.h"
+#include "base/Base.h"
 
 NSP_SLAM_LYJ_BEGIN
 
@@ -16,7 +16,7 @@ public:
     ~processorAbr(){};
 
 
-    virtual bool extractFeature(std::vector<Frame*> _frames)=0;
+    //virtual bool extractFeature(std::vector<Frame*> _frames)=0;
 };
 
 

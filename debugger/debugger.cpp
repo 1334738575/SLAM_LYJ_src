@@ -34,17 +34,17 @@ void drawLineFeatures(const cv::Mat& _img, const std::vector<cv::Vec4f>& _lines,
     _imgOut = _img.clone();
     _lsd->drawSegments(_imgOut, _lines);
 }
-void drawEdgeFeatures(const cv::Mat& _img, const std::shared_ptr<Frame::EdgeFeatures> _edges, cv::Mat& _imgOut,
-    const cv::Scalar _color) {
-    if (_edges->cannyM.cols != 0 && _edges->cannyM.rows != 0) {
-        _imgOut = _edges->cannyM.clone();
-        return;
-    }
-    else if (!_edges->edges_.empty()) {
-        drawFeatures(_img, _edges->edges_, _imgOut, _color, 0);
-        return;
-    }
-}
+//void drawEdgeFeatures(const cv::Mat& _img, const std::shared_ptr<Frame::EdgeFeatures> _edges, cv::Mat& _imgOut,
+//    const cv::Scalar _color) {
+//    if (_edges->cannyM.cols != 0 && _edges->cannyM.rows != 0) {
+//        _imgOut = _edges->cannyM.clone();
+//        return;
+//    }
+//    else if (!_edges->edges_.empty()) {
+//        drawFeatures(_img, _edges->edges_, _imgOut, _color, 0);
+//        return;
+//    }
+//}
 void drawGrid(const cv::Mat& _img, const SLAM_LYJ_MATH::Grid2Df& _grid, cv::Mat& _imgOut, const cv::Scalar _color, const int _thick)
 {
     _imgOut = _img.clone();
@@ -82,25 +82,25 @@ void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kp
 		cv::line(_imgOut, kp1.pt, kp2.pt + cv::Point2f(_img1.cols, 0), _color, _thick);
 	}
 }
-void drawPatchMatches(const cv::Mat& _img1, const cv::Mat& _img2, const std::vector<PatchMatchResult>& _matches, cv::Mat& _imgOut, const cv::Scalar _color, const int _thick)
-{
-    if (_img1.type() != _img2.type()) {
-        std::cout << __FUNCTION__ << " type of img1 is not equal to img2" << std::endl;
-        return;
-    }
-    _imgOut = cv::Mat(std::max(_img1.rows, _img2.rows), _img1.cols + _img2.cols, _img1.type());
-    cv::Mat left = _imgOut(cv::Rect(0, 0, _img1.cols, _img1.rows));
-    cv::Mat right = _imgOut(cv::Rect(_img1.cols, 0, _img2.cols, _img2.rows));
-    _img1.copyTo(left);
-    _img2.copyTo(right);
-    for (const auto& match : _matches) {
-        if (!match.valid)
-            continue;
-        const auto& kp1 = match.p1;
-        const auto& kp2 = match.p1 + match.offset;
-        cv::line(_imgOut, cv::Point(kp1(0), kp1(1)), cv::Point(kp2(0) + _img1.cols, kp2(1)), _color, _thick);
-    }
-}
+//void drawPatchMatches(const cv::Mat& _img1, const cv::Mat& _img2, const std::vector<PatchMatchResult>& _matches, cv::Mat& _imgOut, const cv::Scalar _color, const int _thick)
+//{
+//    if (_img1.type() != _img2.type()) {
+//        std::cout << __FUNCTION__ << " type of img1 is not equal to img2" << std::endl;
+//        return;
+//    }
+//    _imgOut = cv::Mat(std::max(_img1.rows, _img2.rows), _img1.cols + _img2.cols, _img1.type());
+//    cv::Mat left = _imgOut(cv::Rect(0, 0, _img1.cols, _img1.rows));
+//    cv::Mat right = _imgOut(cv::Rect(_img1.cols, 0, _img2.cols, _img2.rows));
+//    _img1.copyTo(left);
+//    _img2.copyTo(right);
+//    for (const auto& match : _matches) {
+//        if (!match.valid)
+//            continue;
+//        const auto& kp1 = match.p1;
+//        const auto& kp2 = match.p1 + match.offset;
+//        cv::line(_imgOut, cv::Point(kp1(0), kp1(1)), cv::Point(kp2(0) + _img1.cols, kp2(1)), _color, _thick);
+//    }
+//}
 
 
 

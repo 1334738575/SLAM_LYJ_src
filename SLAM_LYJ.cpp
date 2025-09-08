@@ -5,19 +5,16 @@
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 #include <ceres/ceres.h>
-#include "vulkanImp/vulkanImp.h"
 #include "base/Triangler.h"
-#include "optimizer/Factor.h"
-#include "base/Frame.h"
 #include "extractor/ORBextractor.h"
 #include "extractor/LSDextractor.h"
 #include "extractor/Cannyextractor.h"
 #include "extractor/SIFTextractor.h"
 #include "thirdParty/STLPlus/include/file_system.h"
-#include <flann/flann.hpp>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/visualization/cloud_viewer.h>
+//#include <flann/flann.hpp>
+//#include <pcl/point_cloud.h>
+//#include <pcl/point_types.h>
+//#include <pcl/visualization/cloud_viewer.h>
 #include <cstdlib> // for rand()
 #include <ctime>   // for time()
 #include "matcher/PatchMatcher.h"
@@ -31,53 +28,6 @@
 
 NSP_SLAM_LYJ_BEGIN
 
-class CURVE_FITTING_COST {
-public:
-    CURVE_FITTING_COST(double x, double y) :_x(x), _y(y) {}
-    template<typename T>
-    bool operator()(const T* const abc, T* residual) const
-    {
-        residual[0] = T(_y) - ceres::exp(abc[0] * T(_x) * T(_x) + abc[1] * T(_x) + abc[2]);
-        return true;
-    }
-    const double _x, _y; //x,y����
-};
-SLAM_LYJ_API void testCeres() {
-    double ae = 2.0, be = -1.0, ce = 5.0;        // ���Ʋ���ֵ
-    //�ڴ���������Ͼ��ȵ�����100�����ݵ㣬���ϰ���������Ϊ���������
-    int N = 100;                                 // ���ݵ�
-    double w_sigma = 1.0;                        // ����Sigmaֵ
-    double inv_sigma = 1.0 / w_sigma;
-    cv::RNG rng;                                 // OpenCV�����������
-    std::vector<double> x_data, y_data;      // ����
-    for (int i = 0; i < N; i++) {
-        double x = i / 100.0;
-        x_data.push_back(x);
-        y_data.push_back(exp(ae * x * x + be * x + ce) + rng.gaussian(w_sigma * w_sigma));
-    }
-    double abc[3] = { ae,be,ce };
-    //����������С��������
-    ceres::Problem problem;
-    for (int i = 0; i < N; ++i)
-    {
-        //����������������ʹ���Զ��󵼣�ģ�������������ͣ����ά�ȣ��в��ά�ȣ�������ά�ȣ����Ż�������ά�ȣ���ά��Ҫ��ǰ���struct��һ�£�
-        problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 3>(new CURVE_FITTING_COST(x_data[i], y_data[i])),
-            nullptr,  //�˺��������ﲻ��Ҫ����Ϊ��
-            abc      //�����Ʋ���
-        );
-    }
-    //�������������
-    ceres::Solver::Options options;
-    options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;//��������������
-    options.minimizer_progress_to_stdout = true;  //�����cout
-    ceres::Solver::Summary summary; //�Ż���Ϣ
-    ceres::Solve(options, &problem, &summary);//��ʼ�Ż�
-    //������
-    std::cout << summary.BriefReport() << std::endl;
-    std::cout << "estimated a,b,c=";
-    for (auto a : abc) std::cout << a << " ";
-}
 SLAM_LYJ_API void testOpenCV() {
     cv::Mat m = cv::imread(LYJOPT->sysHomePath + "other/down.png");
     cv::pyrDown(m, m);
@@ -89,10 +39,6 @@ SLAM_LYJ_API void testEigen() {
     Eigen::Vector3d x;
     x.setZero();
     std::cout << x << std::endl;
-}
-SLAM_LYJ_API void testVulkan() {
-    VulkanImp vk;
-    vk.run();
 }
 SLAM_LYJ_API void testKdTree() {
     using TYPE = Eigen::Vector3d;
@@ -289,112 +235,14 @@ SLAM_LYJ_API void testPose() {
     Pose2D pose2D(1.57, Eigen::Vector2d(0,0));
     std::cout << pose2D.getR() << std::endl;
 }
-SLAM_LYJ_API void testCamera() {
-    std::string path = "E:/SLAM_LYJ/config/PinholeCamera.txt";
-    PinholeCmera cam(path);
-    std::cout << cam << std::endl;
-    Eigen::Vector3d P(10, 1, 5);
-    Eigen::Vector2d p;
-    cam.world2Image(P, p);
-    std::cout << p << std::endl;
-    p(0) = 512;
-    p(1) = 512;
-    cam.image2World(p, 1, P);
-    std::cout << P << std::endl;
-}
 SLAM_LYJ_API void testTriangler() {
     TriangleOption option;
     Trianglerd triangler(option);
-}
-SLAM_LYJ_API void testOptimizer() {
-    OptVarPoint3d pointVar(0);
-    std::cout << pointVar << std::endl;
-    Eigen::Vector3d p3d(2, 2, 2);
-    Eigen::Vector3d p3dDet(1, 1, 1);
-    pointVar.setData(p3d.data());
-    std::cout << pointVar << std::endl;
-    pointVar.update(p3dDet.data());
-    std::cout << pointVar << std::endl;
-
-    OptFactorP3d_P3d factor(0);
-    std::cout << factor.getId() << std::endl;
-    const auto vDims = factor.getVDims();
-    for (const auto& vd : vDims) {
-        std::cout << vd << std::endl;
-    }
-    std::cout << factor.getEDim() << std::endl;
-    Eigen::Vector3d p3dOb(4, 4, 6);
-    factor.setData(p3dOb.data());
-    //std::vector<Eigen::Matrix3d> jac(1);
-    std::vector<std::vector<double>> jac(1, std::vector<double>(9));
-    double* jacPtr = (jac.data()->data());
-    double** jacPP = &jacPtr;
-    double w = 1;
-    Eigen::Vector3d err;
-    factor.calculateErrAndJac(err.data(), jacPP, w, &pointVar);
-    //std::cout << jac[0] << std::endl;
-    std::cout << jac[0][0] << std::endl;
-    std::cout << jac[0][4] << std::endl;
-    std::cout << jac[0][8] << std::endl;
 }
 SLAM_LYJ_API void testBitFlagVec() {
     SLAM_LYJ_MATH::BitFlagVec bfv(10);
     bfv.setFlag(5, true);
     std::cout << bfv[4] << std::endl;
-}
-SLAM_LYJ_API void testFrame() {
-    cv::Mat m = cv::imread("F:/�о���/ǩ��.jpg", 0);
-    cv::pyrDown(m, m);
-    cv::pyrDown(m, m);
-    cv::pyrDown(m, m);
-    cv::GaussianBlur(m, m, cv::Size(3, 3), 10, 20);
-    std::string camPath = "E:/SLAM_LYJ/config/PinholeCamera.txt";
-    PinholeCmera cam(camPath);
-    Frame frame(0, (CameraModule*)(&cam));
-
-    //orb
-    //cv::Ptr<cv::ORB> orb_ = cv::ORB::create();
-    //std::vector<cv::KeyPoint> kps;
-    //cv::Mat des;
-    //orb_->detectAndCompute(m, cv::Mat(), kps, des);
-    //cv::Mat sTmp;
-    //SLAM_LYJ_DEBUGGER::drawFeatures(m, kps, sTmp, cv::Scalar(255), 5, 2);
-    //cv::imshow("111", sTmp);
-    //cv::waitKey();
-    ORBExtractor::Option optORB;
-    ORBExtractor orb(optORB);
-    //Frame frame(0, m, (ExtractorAbr*)&orb, (CameraModule*)(&cam));
-    orb.extract(m, frame);
-    cv::Mat im2ShowORB;
-    SLAM_LYJ_DEBUGGER::drawFeatures(m, frame.getKeyPoints(), im2ShowORB, cv::Scalar(255), 5, 2);
-    cv::imshow("orb", im2ShowORB);
-    cv::waitKey();
-
-    //lsd
-    LSDExtractor::Option optLSD;
-    LSDExtractor lsd(optLSD);
-    lsd.extract(m, frame);
-    cv::Mat im2ShowLSD;
-    SLAM_LYJ_DEBUGGER::drawLineFeatures(m, frame.getLines(), im2ShowLSD, cv::Scalar(255), 1);
-    cv::imshow("line", im2ShowLSD);
-
-    //sift
-    SIFTExtractor::Option optSIFT;
-    SIFTExtractor sift(optSIFT);
-    sift.extract(m, frame);
-    cv::Mat im2ShowSIFT;
-    SLAM_LYJ_DEBUGGER::drawFeatures(m, frame.getKeyPoints(), im2ShowSIFT, cv::Scalar(255));
-    cv::imshow("sift", im2ShowSIFT);
-    cv::waitKey();
-
-    //canny
-    CannyExtractor::Option optCanny;
-    CannyExtractor canny(optCanny);
-    canny.extract(m, frame);
-    cv::Mat im2ShowCanny;
-    SLAM_LYJ_DEBUGGER::drawEdgeFeatures(m, frame.getEdgeFeatures(), im2ShowCanny, cv::Scalar(255));
-    cv::imshow("canny", im2ShowCanny);
-    cv::waitKey();
 }
 SLAM_LYJ_API void testIncrementalAgvAndVar() {
     std::vector<double> v{ 0,1,2,3,4,5,6 };
@@ -455,79 +303,79 @@ SLAM_LYJ_API void testGlobalOption() {
     LYJOPT->sysName = "LYJ_SLAM";
     std::cout << LYJOPT->sysName << std::endl;
 }
-SLAM_LYJ_API void testFlann()
-{
-    // 创建一些随机数据
-    const int num_points = 100;
-    const int dim = 2;
-    std::vector<std::vector<float>> dataset(num_points, std::vector<float>(dim));
-    for (int i = 0; i < num_points; ++i)
-    {
-        dataset[i][0] = static_cast<float>(rand()) / RAND_MAX; // x
-        dataset[i][1] = static_cast<float>(rand()) / RAND_MAX; // y
-    }
-
-    // 将数据转换为 FLANN 格式
-    flann::Matrix<float> dataset_matrix(&dataset[0][0], num_points, dim);
-
-    // 创建一个 FLANN 索引
-    flann::Index<flann::L2<float>> index(dataset_matrix, flann::KDTreeIndexParams(4));
-    index.buildIndex();
-
-    // 查询点
-    std::vector<float> query_point = { 0.5f, 0.5f };
-    flann::Matrix<float> query_matrix(&query_point[0], 1, dim);
-
-    // 存储最近邻的索引和距离
-    std::vector<std::vector<int>> indices(1);
-    std::vector<std::vector<float>> dists(1);
-
-    // 进行最近邻搜索
-    index.knnSearch(query_matrix, indices, dists, 1, flann::SearchParams(32));
-
-    // 打印结果
-    std::cout << "Nearest neighbor index: " << indices[0][0] << ", Distance: " << dists[0][0] << std::endl;
-
-    return;
-}
-SLAM_LYJ_API void testPCL()
-{
-    // 初始化随机数生成器
-    std::srand(static_cast<unsigned int>(std::time(0)));
-
-    // 创建一个点云对象
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-
-    // 设置点云的宽度和高度
-    cloud->width = 1000;    // 点的数量
-    cloud->height = 1;      // 单行点云
-    cloud->is_dense = true; // 点云是否是稠密的
-
-    // 调整点云大小
-    cloud->points.resize(cloud->width * cloud->height);
-
-    // 生成随机点
-    for (size_t i = 0; i < cloud->points.size(); ++i)
-    {
-        cloud->points[i].x = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // x 范围 [0, 10]
-        cloud->points[i].y = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // y 范围 [0, 10]
-        cloud->points[i].z = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // z 范围 [0, 10]
-    }
-
-    std::cout << "Generated " << cloud->width * cloud->height << " random points." << std::endl;
-
-    // 创建一个可视化对象
-    pcl::visualization::CloudViewer viewer("Random Point Cloud Viewer");
-
-    // 设置点云数据
-    viewer.showCloud(cloud);
-
-    // 等待直到用户关闭窗口
-    while (!viewer.wasStopped())
-    {
-    }
-    return;
-}
+//SLAM_LYJ_API void testFlann()
+//{
+//    // 创建一些随机数据
+//    const int num_points = 100;
+//    const int dim = 2;
+//    std::vector<std::vector<float>> dataset(num_points, std::vector<float>(dim));
+//    for (int i = 0; i < num_points; ++i)
+//    {
+//        dataset[i][0] = static_cast<float>(rand()) / RAND_MAX; // x
+//        dataset[i][1] = static_cast<float>(rand()) / RAND_MAX; // y
+//    }
+//
+//    // 将数据转换为 FLANN 格式
+//    flann::Matrix<float> dataset_matrix(&dataset[0][0], num_points, dim);
+//
+//    // 创建一个 FLANN 索引
+//    flann::Index<flann::L2<float>> index(dataset_matrix, flann::KDTreeIndexParams(4));
+//    index.buildIndex();
+//
+//    // 查询点
+//    std::vector<float> query_point = { 0.5f, 0.5f };
+//    flann::Matrix<float> query_matrix(&query_point[0], 1, dim);
+//
+//    // 存储最近邻的索引和距离
+//    std::vector<std::vector<int>> indices(1);
+//    std::vector<std::vector<float>> dists(1);
+//
+//    // 进行最近邻搜索
+//    index.knnSearch(query_matrix, indices, dists, 1, flann::SearchParams(32));
+//
+//    // 打印结果
+//    std::cout << "Nearest neighbor index: " << indices[0][0] << ", Distance: " << dists[0][0] << std::endl;
+//
+//    return;
+//}
+//SLAM_LYJ_API void testPCL()
+//{
+//    // 初始化随机数生成器
+//    std::srand(static_cast<unsigned int>(std::time(0)));
+//
+//    // 创建一个点云对象
+//    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+//
+//    // 设置点云的宽度和高度
+//    cloud->width = 1000;    // 点的数量
+//    cloud->height = 1;      // 单行点云
+//    cloud->is_dense = true; // 点云是否是稠密的
+//
+//    // 调整点云大小
+//    cloud->points.resize(cloud->width * cloud->height);
+//
+//    // 生成随机点
+//    for (size_t i = 0; i < cloud->points.size(); ++i)
+//    {
+//        cloud->points[i].x = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // x 范围 [0, 10]
+//        cloud->points[i].y = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // y 范围 [0, 10]
+//        cloud->points[i].z = static_cast<float>(std::rand()) / RAND_MAX * 10.0f; // z 范围 [0, 10]
+//    }
+//
+//    std::cout << "Generated " << cloud->width * cloud->height << " random points." << std::endl;
+//
+//    // 创建一个可视化对象
+//    pcl::visualization::CloudViewer viewer("Random Point Cloud Viewer");
+//
+//    // 设置点云数据
+//    viewer.showCloud(cloud);
+//
+//    // 等待直到用户关闭窗口
+//    while (!viewer.wasStopped())
+//    {
+//    }
+//    return;
+//}
 SLAM_LYJ_API void testPatchMatch()
 {
     int w = 800;
@@ -591,11 +439,11 @@ SLAM_LYJ_API void testPatchMatch()
     //cv::imshow("img1", img1);
     //cv::imshow("img2", img2);
     //cv::waitKey();
-    PatchMatcher::Option matchOpt;
-    matchOpt.maxIterNum = 4;
-    PatchMatcher matcher(matchOpt);
-    std::vector<PatchMatchResult> matches;
-    matcher.matchPatch(img1, kps2, img2, false, matches);
+    //PatchMatcher::Option matchOpt;
+    //matchOpt.maxIterNum = 4;
+    //PatchMatcher matcher(matchOpt);
+    //std::vector<PatchMatchResult> matches;
+    //matcher.matchPatch(img1, kps2, img2, false, matches);
     return;
 }
 SLAM_LYJ_API void testDiffuser()
