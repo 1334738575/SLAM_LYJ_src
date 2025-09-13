@@ -1,26 +1,32 @@
 #ifndef SLAM_LYJ_PROCESSORABR_H
 #define SLAM_LYJ_PROCESSORABR_H
 
+#include "SLAM_LYJ_src_Defines.h"
 #include "base/Base.h"
 
-NSP_SLAM_LYJ_BEGIN
+NSP_SLAM_LYJ_SRC_BEGIN
 
 
 
-class processorAbr
+class ProcessorAbr
 {
 private:
     /* data */
 public:
-    processorAbr(/* args */){};
-    ~processorAbr(){};
+    ProcessorAbr(/* args */){};
+    ~ProcessorAbr(){};
 
 
-    //virtual bool extractFeature(std::vector<Frame*> _frames)=0;
+    virtual bool extractFeature() = 0;
+    virtual bool matchFeature() = 0;
+    virtual bool generateCorrespondGraph() = 0;
+
+    virtual bool writeData(const std::string& _path) = 0;
+    virtual bool readData(const std::string& _path) = 0;
 };
 
 
 
-NSP_SLAM_LYJ_END
+NSP_SLAM_LYJ_SRC_END
 
 #endif //SLAM_LYJ_PROCESSORABR_H

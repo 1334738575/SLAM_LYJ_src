@@ -266,6 +266,13 @@ SLAM_LYJ_API void testGrid() {
     }
 }
 SLAM_LYJ_API void testSTLPlus() {
+    std::string file1 = "D:/tmp/stlplus.png";
+    std::string file2 = "D:";
+    std::string path1 = stlplus::create_filespec(file2, "tmp");
+    std::string path2 = stlplus::create_filespec(path1, "testImages");
+    std::string path3 = stlplus::create_filespec(path2, "11.png");
+    stlplus::file_copy(path3, file1);
+    return;
     std::string folderPath = "E:/SLAM_LYJ/build/example/Release/testSTLPlus";
     //boost::filesystem::create_directories(folderPath);
     //boost::filesystem::remove(folderPath);
