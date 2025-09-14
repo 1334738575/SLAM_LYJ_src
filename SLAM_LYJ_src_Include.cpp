@@ -16,7 +16,7 @@ SLAM_LYJ_SRC_API void reconstructVisualPoint(const ProVPOpt& _opt)
 {
     ProcessorVP pro;
     pro.readData("D:/tmp/processDebug");
-    pro.writeData("D:/tmp/processDebug");
+    //pro.writeData("D:/tmp/processDebug");
     return;
     pro.setData(_opt);
     pro.extractFeature();

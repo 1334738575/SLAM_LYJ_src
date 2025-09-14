@@ -1,5 +1,5 @@
 #include "processorVP.h"
-#include "thirdParty/STLPlus/include/file_system.h"
+#include "STLPlus/include/file_system.h"
 #include <ImageProcess_LYJ_Include.h>
 
 NSP_SLAM_LYJ_SRC_BEGIN
