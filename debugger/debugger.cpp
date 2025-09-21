@@ -82,6 +82,28 @@ void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kp
 		cv::line(_imgOut, kp1.pt, kp2.pt + cv::Point2f(_img1.cols, 0), _color, _thick);
 	}
 }
+void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kps1,
+    const cv::Mat& _img2, const std::vector<cv::KeyPoint>& _kps2,
+    const std::vector<int>& _matches, cv::Mat& _imgOut,
+    const cv::Scalar _color, const int _thick)
+{
+    if (_img1.type() != _img2.type()) {
+        std::cout << __FUNCTION__ << " type of img1 is not equal to img2" << std::endl;
+        return;
+    }
+    _imgOut = cv::Mat(std::max(_img1.rows, _img2.rows), _img1.cols + _img2.cols, _img1.type());
+    cv::Mat left = _imgOut(cv::Rect(0, 0, _img1.cols, _img1.rows));
+    cv::Mat right = _imgOut(cv::Rect(_img1.cols, 0, _img2.cols, _img2.rows));
+    _img1.copyTo(left);
+    _img2.copyTo(right);
+    for (int i = 0; i < _kps1.size();++i) {
+        if (_matches[i] == -1)
+            continue;
+        const auto& kp1 = _kps1[i];
+        const auto& kp2 = _kps2[_matches[i]];
+        cv::line(_imgOut, kp1.pt, kp2.pt + cv::Point2f(_img1.cols, 0), _color, _thick);
+    }
+}
 //void drawPatchMatches(const cv::Mat& _img1, const cv::Mat& _img2, const std::vector<PatchMatchResult>& _matches, cv::Mat& _imgOut, const cv::Scalar _color, const int _thick)
 //{
 //    if (_img1.type() != _img2.type()) {

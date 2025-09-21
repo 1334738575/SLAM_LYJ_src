@@ -3,10 +3,15 @@
 
 #include <string>
 #include <vector>
-#include <ImageProcess_LYJ_Include.h>
+
 #include <IO/SimpleIO.h>
 #include <base/CameraModule.h>
+#include <common/CommonAlgorithm.h>
+
+#include <ImageProcess_LYJ_Include.h>
 #include <ImageCommon/CorrespondGraph.h>
+
+#include "STLPlus/include/file_system.h"
 
 #define NSP_SLAM_LYJ_SRC_BEGIN \
     namespace SLAM_LYJ_src     \
@@ -29,13 +34,22 @@
 namespace SLAM_LYJ_src
 {
 
-    struct ProVPOpt
+    struct ProcessOption
     {
+        //visual
         std::string imgDir = "";
         std::vector<std::string> imgNames;
         std::string camFile = "";
         std::string priTcwDir = "";
         std::vector<std::string> priTcwNames;
+        std::string vocPath = "";
+        bool writeVoc = true;
+        bool readCache = false;
+        ImageProcess_LYJ::ImageExtractOption imageExtractOpt;
+        ImageProcess_LYJ::ImageMatchOption imageMatchOpt;
+
+        //with mesh
+        std::string meshPath = "";
     };
 
 

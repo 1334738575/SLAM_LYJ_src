@@ -11,7 +11,7 @@
 #include "extractor/Cannyextractor.h"
 #include "extractor/SIFTextractor.h"
 #include "STLPlus/include/file_system.h"
-//#include <flann/flann.hpp>
+#include <flann/flann.hpp>
 //#include <pcl/point_cloud.h>
 //#include <pcl/point_types.h>
 //#include <pcl/visualization/cloud_viewer.h>
@@ -310,41 +310,56 @@ SLAM_LYJ_API void testGlobalOption() {
     LYJOPT->sysName = "LYJ_SLAM";
     std::cout << LYJOPT->sysName << std::endl;
 }
-//SLAM_LYJ_API void testFlann()
-//{
-//    // 创建一些随机数据
-//    const int num_points = 100;
-//    const int dim = 2;
-//    std::vector<std::vector<float>> dataset(num_points, std::vector<float>(dim));
-//    for (int i = 0; i < num_points; ++i)
-//    {
-//        dataset[i][0] = static_cast<float>(rand()) / RAND_MAX; // x
-//        dataset[i][1] = static_cast<float>(rand()) / RAND_MAX; // y
-//    }
-//
-//    // 将数据转换为 FLANN 格式
-//    flann::Matrix<float> dataset_matrix(&dataset[0][0], num_points, dim);
-//
-//    // 创建一个 FLANN 索引
-//    flann::Index<flann::L2<float>> index(dataset_matrix, flann::KDTreeIndexParams(4));
-//    index.buildIndex();
-//
-//    // 查询点
-//    std::vector<float> query_point = { 0.5f, 0.5f };
-//    flann::Matrix<float> query_matrix(&query_point[0], 1, dim);
-//
-//    // 存储最近邻的索引和距离
-//    std::vector<std::vector<int>> indices(1);
-//    std::vector<std::vector<float>> dists(1);
-//
-//    // 进行最近邻搜索
-//    index.knnSearch(query_matrix, indices, dists, 1, flann::SearchParams(32));
-//
-//    // 打印结果
-//    std::cout << "Nearest neighbor index: " << indices[0][0] << ", Distance: " << dists[0][0] << std::endl;
-//
-//    return;
-//}
+SLAM_LYJ_API void testFlann()
+{
+    // 创建一些随机数据
+    const int num_points = 100;
+    const int dim = 2;
+    std::vector<Eigen::Vector2f> dataset(num_points, Eigen::Vector2f(0,0));
+    for (int i = 0; i < num_points; ++i)
+    {
+        dataset[i][0] = static_cast<float>(rand()) / RAND_MAX; // x
+        dataset[i][1] = static_cast<float>(rand()) / RAND_MAX; // y
+    }
+    dataset[num_points - 1][0] = 0.5f;
+    dataset[num_points - 1][1] = 0.5f;
+
+    // 将数据转换为 FLANN 格式
+    flann::Matrix<float> dataset_matrix(dataset[0].data(), num_points, dim);
+
+    // 创建一个 FLANN 索引
+    flann::Index<flann::L2<float>> index(dataset_matrix, flann::KDTreeIndexParams(4));
+    index.buildIndex();
+
+    // 查询点
+    std::vector<float> query_point = { 0.5f, 0.5f };
+    flann::Matrix<float> query_matrix(&query_point[0], 1, dim);
+
+    // 存储最近邻的索引和距离
+    //std::vector<std::vector<int>> indices(1);
+    //std::vector<std::vector<float>> dists(1);
+    int k = 1; // 返回最近邻数量
+    std::vector<int> indices(k);
+    std::vector<float> distances(k);
+    flann::Matrix<int> indices_mat(&indices[0], 1, k);
+    flann::Matrix<float> dists_mat(&distances[0], 1, k);
+
+    // 进行最近邻搜索
+    index.knnSearch(query_matrix, indices_mat, dists_mat, 1, flann::SearchParams(128));
+
+    // 打印结果
+    std::cout << "data: " << std::endl;
+    for(int i = 0; i < num_points; ++i)
+    {
+        std::cout << dataset[i][0] << " " << dataset[i][1] << std::endl;
+
+    }
+    std::cout << "Nearest neighbor index: " << indices[0] << ", Distance: " << distances[0] << std::endl;
+    std::cout << "qury: " << query_point[0] << " " << query_point[1] << std::endl;
+    std::cout << "index: " << dataset[indices[0]][0] << " " << dataset[indices[0]][1] << std::endl;
+
+    return;
+}
 //SLAM_LYJ_API void testPCL()
 //{
 //    // 初始化随机数生成器

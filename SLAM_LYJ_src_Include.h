@@ -13,7 +13,8 @@ namespace SLAM_LYJ_src
 
 SLAM_LYJ_SRC_API void print_SLAM_LYJ_src_Test();
 
-SLAM_LYJ_SRC_API void reconstructVisualPoint(const ProVPOpt& _opt);
+SLAM_LYJ_SRC_API void reconstructVisualPoint(ProcessOption _opt = ProcessOption());
+SLAM_LYJ_SRC_API void reconstructVisualWithMesh(ProcessOption _opt=ProcessOption());
 
 
 

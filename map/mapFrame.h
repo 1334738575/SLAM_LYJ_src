@@ -13,6 +13,10 @@ namespace SLAM_LYJ_src
 		MapFrame(const int& _id)
 			:id_(_id)
 		{ }
+		MapFrame(const int& _id, std::shared_ptr<ImageProcess_LYJ::ImageExtractData> _imageExtractData)
+			:id_(_id), imageExtractData_(_imageExtractData)
+		{
+		}
 		~MapFrame() {};
 
 		inline const int& getId() const { return id_; }

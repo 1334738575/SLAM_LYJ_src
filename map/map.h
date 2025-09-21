@@ -16,6 +16,9 @@ namespace SLAM_LYJ_src
 		{};
 		~Map() {};
 
+		void setMapFrames(std::vector<std::shared_ptr<MapFrame>>& _mapFrames);
+		void setMapPoints(std::vector<std::shared_ptr<MapPoint>>& _mapPoints);
+
 		inline const int& getId() const { return id_; }
 		std::shared_ptr<MapFrame> getMapFrame(const int& _id);
 		std::shared_ptr<MapPoint> getMapPoint(const int& _id);

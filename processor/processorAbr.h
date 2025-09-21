@@ -20,6 +20,8 @@ public:
     virtual bool extractFeature() = 0;
     virtual bool matchFeature() = 0;
     virtual bool generateCorrespondGraph() = 0;
+    virtual bool generateMap() = 0;
+    virtual bool optimize() = 0;
 
     virtual bool writeData(const std::string& _path) = 0;
     virtual bool readData(const std::string& _path) = 0;

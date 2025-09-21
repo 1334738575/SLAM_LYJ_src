@@ -30,6 +30,10 @@ void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kp
 	const cv::Mat& _img2, const std::vector<cv::KeyPoint>& _kps2,
 	const std::vector<std::pair<int, int>>& _matches, cv::Mat& _imgOut,
 	const cv::Scalar _color = cv::Scalar(255, 255, 255), const int _thick = 1);
+void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kps1,
+	const cv::Mat& _img2, const std::vector<cv::KeyPoint>& _kps2,
+	const std::vector<int>& _matches, cv::Mat& _imgOut,
+	const cv::Scalar _color = cv::Scalar(255, 255, 255), const int _thick = 1);
 //void drawPatchMatches(const cv::Mat& _img1,	const cv::Mat& _img2,
 //	const std::vector<PatchMatchResult>& _matches, cv::Mat& _imgOut,
 //	const cv::Scalar _color = cv::Scalar(255, 255, 255), const int _thick = 1);
