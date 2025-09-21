@@ -25,7 +25,8 @@ public:
 private:
 	SLAM_LYJ::BaseTriMesh btm_;
 	CUDA_LYJ::ProHandle proHandle_ = nullptr;
-	CUDA_LYJ::ProjectorCache proCache_;
+	std::vector<CUDA_LYJ::ProjectorCache> proCaches_;
+	int thdNum_ = 4;
 };
 
 
