@@ -29,13 +29,14 @@ public:
     ~ProcessorVP();
 
     virtual void setData(const ProcessOption& _opt);
-
+    int searchByProjection(std::shared_ptr<MapFrame> _mapFrame1, std::shared_ptr<MapFrame> _mapFrame2, float _th);
 
     // Í¨¹ý processorAbr ¼Ì³Ð
     bool extractFeature() override;
     bool matchFeature() override;
-    bool generateCorrespondGraph() override;
+    bool generateCorrespondGraph(bool _bCompress = true) override;
     bool generateMap() override;
+    bool incrementalMap() override;
     bool optimize() override;
 
     bool writeData(const std::string& _path) override;

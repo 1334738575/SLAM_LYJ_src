@@ -34,10 +34,15 @@ namespace SLAM_LYJ_src
 		inline void removeOb(const int& _frameId, const int& _pointId) { obs_.erase(_frameId); }
 		inline bool existOb(const int& _frameId)const{	return obs_.count(_frameId) > 0;}
 
+		inline void setDescriptor(const cv::Mat& _des) { descriptor_ = _des; }
+		inline const cv::Mat& getDescriptor() const { return descriptor_; }
+		void updateDescriptor(const std::vector<cv::Mat>& _descs);
+
 	private:
 		int id_ = -1;
 		Eigen::Vector3d Pw_;
 		std::map<int, int> obs_;
+		cv::Mat descriptor_;
 	};
 }
 

@@ -26,4 +26,24 @@ namespace SLAM_LYJ_src
             return mapPoints_[_id];
         return nullptr;
     }
+    void Map::updateMapPointsDescriptors()
+    {
+        for (auto& mapPoint : mapPoints_)
+            updateMapPointsDescriptor(mapPoint.first);
+    }
+    void Map::updateMapPointsDescriptor(const int& _id)
+    {
+        std::vector<cv::Mat> descs;
+        const auto& obs = mapPoints_[_id]->getObs();
+        for (const auto& ob : obs)
+        {
+			auto mapFrame = getMapFrame(ob.first);
+			if (mapFrame)
+			{
+				auto imgExData = mapFrame->getImageExtractData();
+				if (ob.second >= 0 && ob.second < imgExData->descriptors_.rows)
+					descs.push_back(imgExData->descriptors_.row(ob.second));
+			}
+        }
+    }
 }

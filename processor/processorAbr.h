@@ -10,8 +10,9 @@ NSP_SLAM_LYJ_SRC_BEGIN
 
 class ProcessorAbr
 {
-private:
+protected:
     /* data */
+    int thdNum_ = 1;
 public:
     ProcessorAbr(/* args */){};
     ~ProcessorAbr(){};
@@ -19,8 +20,9 @@ public:
 
     virtual bool extractFeature() = 0;
     virtual bool matchFeature() = 0;
-    virtual bool generateCorrespondGraph() = 0;
+    virtual bool generateCorrespondGraph(bool _bCompress=true) = 0;
     virtual bool generateMap() = 0;
+    virtual bool incrementalMap() = 0;
     virtual bool optimize() = 0;
 
     virtual bool writeData(const std::string& _path) = 0;

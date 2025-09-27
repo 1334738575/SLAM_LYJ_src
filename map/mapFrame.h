@@ -16,6 +16,7 @@ namespace SLAM_LYJ_src
 		MapFrame(const int& _id, std::shared_ptr<ImageProcess_LYJ::ImageExtractData> _imageExtractData)
 			:id_(_id), imageExtractData_(_imageExtractData)
 		{
+			mapPoints_.resize(imageExtractData_->kps_.size(), nullptr);
 		}
 		~MapFrame() {};
 

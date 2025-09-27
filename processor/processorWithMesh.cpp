@@ -1,5 +1,4 @@
 #include "processorWithMesh.h"
-#include <chrono>
 //#include <common/FlannSearch.h>
 
 NSP_SLAM_LYJ_SRC_BEGIN
@@ -8,7 +7,9 @@ NSP_SLAM_LYJ_SRC_BEGIN
 
 
 ProcessorWithMesh::ProcessorWithMesh()
-{}
+{
+	thdNum_ = 10;
+}
 ProcessorWithMesh::~ProcessorWithMesh()
 {
 	if (proHandle_)
@@ -95,9 +96,6 @@ bool ProcessorWithMesh::extractFeature()
 	std::vector<ProBuffer> pBuffers(thdNum_);
 	for(int i=0;i<thdNum_;++i)
 		pBuffers[i].init(w, h, &btm_);
-	int threadsNum = std::thread::hardware_concurrency();
-	std::cout << "threads num: " << threadsNum << std::endl;
-	auto t_start = std::chrono::high_resolution_clock::now();
 	auto funcProject = [&](uint64_t _s, uint64_t _e, uint32_t _id) {
 		for (int i = _s; i < _e; ++i)
 		{
@@ -122,48 +120,57 @@ bool ProcessorWithMesh::extractFeature()
 			//cv::waitKey();
 		}
 	};
-	SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
-	threadPool.processWithId(funcProject, 0, imgSize);
-	std::cout << "project time: "
-    << std::chrono::duration_cast<std::chrono::milliseconds>(
-		std::chrono::high_resolution_clock::now() - t_start).count() << " ms\n";
-	bool ret = true;
-	//ret = ProcessorVP::extractFeature();
-	for (int i = 0; i < imgSize; ++i)
+	//int threadsNum = std::thread::hardware_concurrency();
+	//std::cout << "threads num: " << threadsNum << std::endl;
 	{
-		cv::Mat depthsShow(h, w, CV_8UC1);
-		depthsShow.setTo(0);
-		for (int r = 0; r < h; ++r)
-		{
-			for (int c = 0; c < w; ++c)
-			{
-				float d = imageExtractDatasPtr_[i]->depths.at<float>(r, c);
-				if (d == FLT_MAX)
-					continue;
-				int di = d * 10;
-				depthsShow.at<uchar>(r, c) = (uchar)di;
-			}
-		}
-		cv::pyrDown(depthsShow, depthsShow);
-		cv::pyrDown(depthsShow, depthsShow);
-		cv::imshow("depth", depthsShow);
-		//cv::imshow("image", imageExtractDatasPtr_[i]->img);
-		cv::waitKey();
-		//auto P3Ds = imageExtractDatasPtr_[i]->kp3Ds_;
-		//SLAM_LYJ::Pose3D Twc = imageExtractDatasPtr_[i]->Tcw.inversed();
-		//for (int j = 0; j < P3Ds.size(); ++j)
-		//{
-		//	P3Ds[j] = Twc * imageExtractDatasPtr_[i]->kp3Ds_[j];
-		//}
-		//SLAM_LYJ::BaseTriMesh btmTmp;
-		//btmTmp.setVertexs(P3Ds);
-		//SLAM_LYJ::writePLYMesh("D:/tmp/p3ds.ply", btmTmp);
-		//continue;
+		auto t_start = std::chrono::high_resolution_clock::now();
+		SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
+		threadPool.processWithId(funcProject, 0, imgSize);
+		std::cout << "project time: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::high_resolution_clock::now() - t_start).count() << " ms\n";
 	}
+	bool ret = true;
+	ret = ProcessorVP::extractFeature();
+	//for (int i = 0; i < imgSize; ++i)
+	//{
+	//	cv::Mat depthsShow(h, w, CV_8UC1);
+	//	depthsShow.setTo(0);
+	//	for (int r = 0; r < h; ++r)
+	//	{
+	//		for (int c = 0; c < w; ++c)
+	//		{
+	//			float d = imageExtractDatasPtr_[i]->depths.at<float>(r, c);
+	//			if (d == FLT_MAX)
+	//				continue;
+	//			int di = d * 10;
+	//			depthsShow.at<uchar>(r, c) = (uchar)di;
+	//		}
+	//	}
+	//	cv::pyrDown(depthsShow, depthsShow);
+	//	cv::pyrDown(depthsShow, depthsShow);
+	//	cv::imshow("depth", depthsShow);
+	//	//cv::imshow("image", imageExtractDatasPtr_[i]->img);
+	//	cv::waitKey();
+	//	//auto P3Ds = imageExtractDatasPtr_[i]->kp3Ds_;
+	//	//SLAM_LYJ::Pose3D Twc = imageExtractDatasPtr_[i]->Tcw.inversed();
+	//	//for (int j = 0; j < P3Ds.size(); ++j)
+	//	//{
+	//	//	P3Ds[j] = Twc * imageExtractDatasPtr_[i]->kp3Ds_[j];
+	//	//}
+	//	//SLAM_LYJ::BaseTriMesh btmTmp;
+	//	//btmTmp.setVertexs(P3Ds);
+	//	//SLAM_LYJ::writePLYMesh("D:/tmp/p3ds.ply", btmTmp);
+	//	//continue;
+	//}
 
 	return ret;
 }
 inline bool ProcessorWithMesh::generateMap()
+{
+	return false;
+}
+bool ProcessorWithMesh::incrementalMap()
 {
 	return false;
 }

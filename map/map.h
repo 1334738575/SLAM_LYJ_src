@@ -23,6 +23,9 @@ namespace SLAM_LYJ_src
 		std::shared_ptr<MapFrame> getMapFrame(const int& _id);
 		std::shared_ptr<MapPoint> getMapPoint(const int& _id);
 
+		void updateMapPointsDescriptors();
+		void updateMapPointsDescriptor(const int& _id);
+
 	private:
 		int id_ = -1;
 		std::unordered_map<int, std::shared_ptr<MapFrame>> mapFrames_;

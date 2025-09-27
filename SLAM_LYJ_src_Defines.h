@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include <IO/SimpleIO.h>
 #include <base/CameraModule.h>

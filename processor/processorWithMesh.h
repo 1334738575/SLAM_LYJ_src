@@ -20,13 +20,13 @@ public:
 	// Í¨¹ý processorAbr ¼Ì³Ð
 	bool extractFeature() override;
 	bool generateMap() override;
+	bool incrementalMap() override;
 	bool optimize() override;
 
 private:
 	SLAM_LYJ::BaseTriMesh btm_;
 	CUDA_LYJ::ProHandle proHandle_ = nullptr;
 	std::vector<CUDA_LYJ::ProjectorCache> proCaches_;
-	int thdNum_ = 4;
 };
 
 

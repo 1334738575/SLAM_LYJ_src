@@ -33,11 +33,12 @@ SLAM_LYJ_SRC_API void reconstructVisualPoint(ProcessOption _opt)
     else {
         pro.extractFeature();
         pro.matchFeature();
-        pro.generateCorrespondGraph();
+        pro.generateCorrespondGraph(false);
     }
     pro.writeData("D:/tmp/processDebug");
-    pro.generateMap();
-    pro.optimize();
+    pro.incrementalMap();
+    //pro.generateMap();
+    //pro.optimize();
     return;
 }
 
