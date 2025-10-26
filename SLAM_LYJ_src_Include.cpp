@@ -20,7 +20,7 @@ SLAM_LYJ_SRC_API void reconstructVisualPoint(ProcessOption _opt)
     _opt.imageExtractOpt.useLineFeature = true;
     _opt.imageExtractOpt.useEdgeFeature = true;
     _opt.imageMatchOpt.pointMatchMode = 0;
-    _opt.imageMatchOpt.pointMatchCheck = true;
+    //_opt.imageMatchOpt.pointMatchCheck = true;
     _opt.imageMatchOpt.usePointMatch = true;
     _opt.imageMatchOpt.useLineMatch = false;
     _opt.imageMatchOpt.useEdgeMatch = false;

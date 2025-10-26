@@ -66,7 +66,7 @@ static int DescriptorDistance(const cv::Mat& a, const cv::Mat& b)
 
 ProcessorVP::ProcessorVP(/* args */)
 {
-    //thdNum_ = 1;
+    thdNum_ = 10;
 }
 ProcessorVP::~ProcessorVP()
 {}
@@ -249,7 +249,8 @@ bool ProcessorVP::extractFeature()
             imageExtractDatasPtr_[i]->useLineFeature = opt_.imageExtractOpt.useLineFeature;
             imageExtractDatasPtr_[i]->useEdgeFeature = opt_.imageExtractOpt.useEdgeFeature;
             imageExtractDatasPtr_[i]->img = cv::imread(imageExtractDatasPtr_[i]->path, 0);
-            cv::GaussianBlur(imageExtractDatasPtr_[i]->img, imageExtractDatasPtr_[i]->img, cv::Size(5, 5), 0);
+			//cv::cvtColor(imageExtractDatasPtr_[i]->img, imageExtractDatasPtr_[i]->img, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(imageExtractDatasPtr_[i]->img, imageExtractDatasPtr_[i]->img, cv::Size(3, 3), 0);
             if (imageExtractDatasPtr_[i]->img.empty())
             {
                 //std::cout << "read image failed: " << imageExtractDatasPtr_[i]->path << std::endl;
@@ -269,7 +270,7 @@ bool ProcessorVP::extractFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
+        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);//thdNum_
         threadPool.process(funcExtracOrb, 0, imgSize);
         std::cout << "extract time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(

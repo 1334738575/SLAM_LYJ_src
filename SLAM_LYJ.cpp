@@ -220,7 +220,7 @@ SLAM_LYJ_API void testLine() {
     std::cout << SLAM_LYJ_MATH::Line2d::angleL2L(line2d, line2d2) << std::endl;
     cv::Mat m(100, 100, CV_8UC1, cv::Scalar(0));
     std::vector<Eigen::Vector2i> ps;
-    SLAM_LYJ_MATH::bresenhamLine(0, 0, 90, 50, ps);
+    SLAM_LYJ_MATH::Line2<int>::bresenhamLine(0, 0, 90, 50, ps);
     for (const auto& point : ps) {
         m.at<uchar>(cv::Point(point.x(), point.y())) = 255;
     }
@@ -236,7 +236,7 @@ SLAM_LYJ_API void testPose() {
     std::cout << pose2D.getR() << std::endl;
 }
 SLAM_LYJ_API void testTriangler() {
-    TriangleOption option;
+    Point3DTriangleOption option;
     Trianglerd triangler(option);
 }
 SLAM_LYJ_API void testBitFlagVec() {

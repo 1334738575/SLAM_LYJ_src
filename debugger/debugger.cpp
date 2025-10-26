@@ -96,9 +96,13 @@ void drawPointMatches(const cv::Mat& _img1, const std::vector<cv::KeyPoint>& _kp
     cv::Mat right = _imgOut(cv::Rect(_img1.cols, 0, _img2.cols, _img2.rows));
     _img1.copyTo(left);
     _img2.copyTo(right);
+    //int cnt = 0;
     for (int i = 0; i < _kps1.size();++i) {
         if (_matches[i] == -1)
             continue;
+        //++cnt;
+        //if (cnt > 4)
+            //break;
         const auto& kp1 = _kps1[i];
         const auto& kp2 = _kps2[_matches[i]];
         cv::line(_imgOut, kp1.pt, kp2.pt + cv::Point2f(_img1.cols, 0), _color, _thick);
