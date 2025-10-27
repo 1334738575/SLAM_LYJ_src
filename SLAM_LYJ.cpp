@@ -236,8 +236,8 @@ SLAM_LYJ_API void testPose() {
     std::cout << pose2D.getR() << std::endl;
 }
 SLAM_LYJ_API void testTriangler() {
-    Point3DTriangleOption option;
-    Trianglerd triangler(option);
+    TrianglerPoint3DOption option;
+    TrianglerPoint3D triangler;
 }
 SLAM_LYJ_API void testBitFlagVec() {
     SLAM_LYJ_MATH::BitFlagVec bfv(10);
