@@ -12,7 +12,6 @@ class ProcessorAbr
 {
 protected:
     /* data */
-    int thdNum_ = 1;
 public:
     ProcessorAbr(/* args */){};
     ~ProcessorAbr(){};

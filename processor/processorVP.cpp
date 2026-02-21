@@ -66,7 +66,6 @@ static int DescriptorDistance(const cv::Mat& a, const cv::Mat& b)
 
 ProcessorVP::ProcessorVP(/* args */)
 {
-    thdNum_ = 10;
 }
 ProcessorVP::~ProcessorVP()
 {}
@@ -270,7 +269,7 @@ bool ProcessorVP::extractFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);//thdNum_
+        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);//thdNum_
         threadPool.process(funcExtracOrb, 0, imgSize);
         std::cout << "extract time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -297,7 +296,7 @@ bool ProcessorVP::extractFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);//thdNum_
+        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);//thdNum_
         threadPool.process(funcTransform, 0, imgSize);
         std::cout << "transform time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -369,7 +368,7 @@ bool ProcessorVP::matchFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
+        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
         threadPool.process(funcQury, 0, imgSize);
         std::cout << "qury time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -399,7 +398,7 @@ bool ProcessorVP::matchFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
+        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
         threadPool.process(funcMatchMulti, 0, matchDatasPtr.size());
         std::cout << "match time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(

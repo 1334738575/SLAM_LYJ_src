@@ -1,5 +1,6 @@
 #include "processorWithMesh.h"
 //#include <common/FlannSearch.h>
+#include <common/Timer.h>
 
 NSP_SLAM_LYJ_SRC_BEGIN
 
@@ -8,7 +9,6 @@ NSP_SLAM_LYJ_SRC_BEGIN
 
 ProcessorWithMesh::ProcessorWithMesh()
 {
-	thdNum_ = 10;
 }
 ProcessorWithMesh::~ProcessorWithMesh()
 {
@@ -36,8 +36,8 @@ void ProcessorWithMesh::setData(const ProcessOption& _opt)
 	camParams[2] = cam_.cx();
 	camParams[3] = cam_.cy();
 	proHandle_ = CUDA_LYJ::initProjector(btm_.getVertexs()[0].data(), btm_.getVn(), btm_.getFCenters()[0].data(), btm_.getFNormals()[0].data(), btm_.getFaces()[0].vId_, btm_.getFn(), camParams.data(), cam_.wide(), cam_.height());
-	proCaches_.resize(thdNum_);
-	for(int i=0;i<thdNum_;++i)
+	proCaches_.resize(opt_.threadNum);
+	for(int i=0;i< opt_.threadNum;++i)
 		proCaches_[i].init(btm_.getVn(), btm_.getFn(), cam_.wide(), cam_.height());
 	for (int i = 0; i < imageExtractDatasPtr_.size(); ++i)
 	{
@@ -93,14 +93,17 @@ bool ProcessorWithMesh::extractFeature()
 	int imgSize = imageExtractDatasPtr_.size();
 	int w = cam_.wide();
 	int h = cam_.height();
-	std::vector<ProBuffer> pBuffers(thdNum_);
-	for(int i=0;i<thdNum_;++i)
+	std::vector<ProBuffer> pBuffers(opt_.threadNum);
+	for(int i=0;i< opt_.threadNum;++i)
 		pBuffers[i].init(w, h, &btm_);
 	auto funcProject = [&](uint64_t _s, uint64_t _e, uint32_t _id) {
 		for (int i = _s; i < _e; ++i)
 		{
+			SLAM_LYJ::Timer q;
 			pBuffers[_id].updateTcw(imageExtractDatasPtr_[i]->Tcw);
 			CUDA_LYJ::project(proHandle_, proCaches_[_id], pBuffers[_id].Tcw.data(), (float*)pBuffers[_id].depthsM.data, pBuffers[_id].fIds.data(), pBuffers[_id].allVisiblePIds.data(), pBuffers[_id].allVisibleFIds.data(), pBuffers[_id].minD, pBuffers[_id].maxD, pBuffers[_id].csTh, pBuffers[_id].detDTh);
+			double t = q.elapsed();
+			std::cout << "cost time: " << t << " ms" << std::endl;
 			imageExtractDatasPtr_[i]->depths = pBuffers[_id].depthsM.clone();
 			imageExtractDatasPtr_[i]->fIds = pBuffers[_id].fIds;
 			//cv::Mat depthsShow(h, w, CV_8UC1);
@@ -118,13 +121,57 @@ bool ProcessorWithMesh::extractFeature()
 			//}
 			//cv::imshow("depth", depthsShow);
 			//cv::waitKey();
+			if (true)
+			{
+				std::vector<Eigen::Vector3f> clrs(btm_.getVn());
+				std::string objPath = "D:/SLAM_LYJ_Packages/SLAM_LYJ_qt/data/";
+				cv::Mat immm = cv::imread(imageExtractDatasPtr_[i]->path);
+				cv::imwrite(objPath + "texture.png", immm);
+				const auto& Tcw = imageExtractDatasPtr_[i]->Tcw;
+				const auto& cam = imageExtractDatasPtr_[i]->cam;
+				const auto& pValids = pBuffers[_id].allVisiblePIds;
+				int pSize = pBuffers[_id].allVisiblePIds.size();
+				std::vector<float> uvs(pSize * 2);
+				Eigen::Vector2f uv;
+				Eigen::Vector3f Pc;
+				int ww = cam->wide();
+				int hh = cam->height();
+				for (int vi = 0; vi < pSize; ++vi)
+				{
+					if (pValids[vi] == 0)
+					{
+						uvs[vi * 2] = -1;
+						uvs[vi * 2 + 1] = -1;
+						clrs[vi] = Eigen::Vector3f(0, 0, 0);
+					}
+					else
+					{
+						const Eigen::Vector3f& Pw = btm_.getVertex(vi);
+						Pc = Tcw * Pw;
+						cam->world2Image(Pc, uv);
+						uvs[vi * 2] = uv[0] / ww;
+						uvs[vi * 2 + 1] = 1.f - uv[1] / hh;
+						clrs[vi] = Eigen::Vector3f(1, 1, 1);
+					}
+				}
+				std::ofstream fff(objPath + "uvs.txt");
+				for (int ii = 0; ii < pSize * 2; ++ii)
+					fff << uvs[ii] << " ";
+				fff << std::endl;
+				fff.close();
+				SLAM_LYJ::BaseTriMesh btm2 = btm_;
+				btm2.enableVColors();
+				btm2.setVColors(clrs);
+				SLAM_LYJ::writePLYMesh(objPath + "btm.ply", btm2);
+				continue;
+			}
 		}
 	};
 	//int threadsNum = std::thread::hardware_concurrency();
 	//std::cout << "threads num: " << threadsNum << std::endl;
 	{
 		auto t_start = std::chrono::high_resolution_clock::now();
-		SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(thdNum_);
+		SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
 		threadPool.processWithId(funcProject, 0, imgSize);
 		std::cout << "project time: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(

@@ -48,6 +48,7 @@ namespace SLAM_LYJ_src
         bool readCache = false;
         ImageProcess_LYJ::ImageExtractOption imageExtractOpt;
         ImageProcess_LYJ::ImageMatchOption imageMatchOpt;
+        int threadNum = -1;
 
         //with mesh
         std::string meshPath = "";
