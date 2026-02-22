@@ -16,7 +16,7 @@ class ProcessorVP : public ProcessorAbr
 protected:
     /* data */
     ProcessOption opt_;
-    SLAM_LYJ::PinholeCamera cam_;
+    COMMON_LYJ::PinholeCamera cam_;
     std::vector<std::shared_ptr<ImageProcess_LYJ::ImageExtractData>> imageExtractDatasPtr_;//”ÎimageExtractDatas_œ‡Õ¨
     std::map<uint32_t, std::shared_ptr<ImageProcess_LYJ::ImageExtractData>> imageExtractDatas_;
     std::unordered_map<uint64_t, std::shared_ptr<ImageProcess_LYJ::ImageMatchData>> imageMatchDatas_;

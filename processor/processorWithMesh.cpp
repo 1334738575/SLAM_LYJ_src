@@ -25,7 +25,7 @@ void ProcessorWithMesh::setData(const ProcessOption& _opt)
 		std::cout << "mesh file is not exist!" << std::endl;
 		return;
 	}
-	SLAM_LYJ::readPLYMesh(_opt.meshPath, btm_);
+	COMMON_LYJ::readPLYMesh(_opt.meshPath, btm_);
 	btm_.enableFCenters();
 	btm_.calculateFCenters();
 	btm_.enableFNormals();
@@ -48,16 +48,16 @@ void ProcessorWithMesh::setData(const ProcessOption& _opt)
 struct ProBuffer
 {
 	ProBuffer() {}
-	ProBuffer(const int& _w, const int& _h, SLAM_LYJ::BaseTriMesh* _btmPtr, const float& _minD=0.01f, const float& _maxD=FLT_MAX, const float& _csTh=0.5f, const float& _detDTh=0.01f)
+	ProBuffer(const int& _w, const int& _h, COMMON_LYJ::BaseTriMesh* _btmPtr, const float& _minD=0.01f, const float& _maxD=FLT_MAX, const float& _csTh=0.5f, const float& _detDTh=0.01f)
 	{
 		init(_w, _h, _btmPtr, _minD, _maxD, _csTh, _detDTh);
 	}
-	void updateTcw(const SLAM_LYJ::Pose3D& _Tcw)
+	void updateTcw(const COMMON_LYJ::Pose3D& _Tcw)
 	{
 		_Tcw.getMatrix34f(Tcw);
 	}
 
-	void init(const int& _w, const int& _h, SLAM_LYJ::BaseTriMesh* _btmPtr, const float& _minD = 0.01f, const float& _maxD = FLT_MAX, const float& _csTh = 0.5f, const float& _detDTh = 0.01f)
+	void init(const int& _w, const int& _h, COMMON_LYJ::BaseTriMesh* _btmPtr, const float& _minD = 0.01f, const float& _maxD = FLT_MAX, const float& _csTh = 0.5f, const float& _detDTh = 0.01f)
 	{
 		w = _w;
 		h = _h;
@@ -74,7 +74,7 @@ struct ProBuffer
 
 	int w = 0;
 	int h = 0;
-	SLAM_LYJ::BaseTriMesh* btmPtr = nullptr;
+	COMMON_LYJ::BaseTriMesh* btmPtr = nullptr;
 	Eigen::Matrix<float, 3, 4> Tcw;
 	cv::Mat depthsM;
 	std::vector<uint> fIds;
@@ -99,7 +99,7 @@ bool ProcessorWithMesh::extractFeature()
 	auto funcProject = [&](uint64_t _s, uint64_t _e, uint32_t _id) {
 		for (int i = _s; i < _e; ++i)
 		{
-			SLAM_LYJ::Timer q;
+			COMMON_LYJ::Timer q;
 			pBuffers[_id].updateTcw(imageExtractDatasPtr_[i]->Tcw);
 			CUDA_LYJ::project(proHandle_, proCaches_[_id], pBuffers[_id].Tcw.data(), (float*)pBuffers[_id].depthsM.data, pBuffers[_id].fIds.data(), pBuffers[_id].allVisiblePIds.data(), pBuffers[_id].allVisibleFIds.data(), pBuffers[_id].minD, pBuffers[_id].maxD, pBuffers[_id].csTh, pBuffers[_id].detDTh);
 			double t = q.elapsed();
@@ -159,10 +159,10 @@ bool ProcessorWithMesh::extractFeature()
 					fff << uvs[ii] << " ";
 				fff << std::endl;
 				fff.close();
-				SLAM_LYJ::BaseTriMesh btm2 = btm_;
+				COMMON_LYJ::BaseTriMesh btm2 = btm_;
 				btm2.enableVColors();
 				btm2.setVColors(clrs);
-				SLAM_LYJ::writePLYMesh(objPath + "btm.ply", btm2);
+				COMMON_LYJ::writePLYMesh(objPath + "btm.ply", btm2);
 				continue;
 			}
 		}
@@ -171,7 +171,7 @@ bool ProcessorWithMesh::extractFeature()
 	//std::cout << "threads num: " << threadsNum << std::endl;
 	{
 		auto t_start = std::chrono::high_resolution_clock::now();
-		SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
+		COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);
 		threadPool.processWithId(funcProject, 0, imgSize);
 		std::cout << "project time: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -200,14 +200,14 @@ bool ProcessorWithMesh::extractFeature()
 	//	//cv::imshow("image", imageExtractDatasPtr_[i]->img);
 	//	cv::waitKey();
 	//	//auto P3Ds = imageExtractDatasPtr_[i]->kp3Ds_;
-	//	//SLAM_LYJ::Pose3D Twc = imageExtractDatasPtr_[i]->Tcw.inversed();
+	//	//COMMON_LYJ::Pose3D Twc = imageExtractDatasPtr_[i]->Tcw.inversed();
 	//	//for (int j = 0; j < P3Ds.size(); ++j)
 	//	//{
 	//	//	P3Ds[j] = Twc * imageExtractDatasPtr_[i]->kp3Ds_[j];
 	//	//}
-	//	//SLAM_LYJ::BaseTriMesh btmTmp;
+	//	//COMMON_LYJ::BaseTriMesh btmTmp;
 	//	//btmTmp.setVertexs(P3Ds);
-	//	//SLAM_LYJ::writePLYMesh("D:/tmp/p3ds.ply", btmTmp);
+	//	//COMMON_LYJ::writePLYMesh("D:/tmp/p3ds.ply", btmTmp);
 	//	//continue;
 	//}
 

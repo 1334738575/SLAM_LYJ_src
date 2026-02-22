@@ -145,9 +145,9 @@ int ProcessorVP::searchByProjection(std::shared_ptr<MapFrame> _mapFrame1, std::s
         rotHist[i].reserve(500);
     const float factor = 1.0f / HISTO_LENGTH;
 
-    const SLAM_LYJ::Pose3D Tc2w = _mapFrame2->getImageExtractData()->Tcw;
+    const COMMON_LYJ::Pose3D Tc2w = _mapFrame2->getImageExtractData()->Tcw;
     const Eigen::Vector3f twc2 = Tc2w.inversed().gett().cast<float>();
-    const SLAM_LYJ::Pose3D Tc1w = _mapFrame1->getImageExtractData()->Tcw;
+    const COMMON_LYJ::Pose3D Tc1w = _mapFrame1->getImageExtractData()->Tcw;
     const Eigen::Vector3f tc1c2 = Tc1w * twc2;
     int N = _mapFrame1->getImageExtractData()->kps_.size();
     Eigen::Vector2f uv;
@@ -269,7 +269,7 @@ bool ProcessorVP::extractFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);//thdNum_
+        COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);//thdNum_
         threadPool.process(funcExtracOrb, 0, imgSize);
         std::cout << "extract time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -296,7 +296,7 @@ bool ProcessorVP::extractFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);//thdNum_
+        COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);//thdNum_
         threadPool.process(funcTransform, 0, imgSize);
         std::cout << "transform time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -333,18 +333,18 @@ bool ProcessorVP::matchFeature()
         ////        if (triData.bTris[i])
         ////            Ps.push_back(triData.Ps[i].cast<float>());
         ////    }
-        ////    SLAM_LYJ::BaseTriMesh btm;
+        ////    COMMON_LYJ::BaseTriMesh btm;
         ////    btm.setVertexs(Ps);
-        ////    SLAM_LYJ::writePLYMesh("D:/tmp/tri.ply", btm);
+        ////    COMMON_LYJ::writePLYMesh("D:/tmp/tri.ply", btm);
         ////}
         //cv::Mat imgMatch;
-        //SLAM_LYJ::SLAM_LYJ_DEBUGGER::drawPointMatches(imageExtractDatas_[id1]->img, imageExtractDatas_[id1]->kps_, imageExtractDatas_[id2]->img, imageExtractDatas_[id2]->kps_, _imageMatchData->match2to1P, imgMatch, cv::Scalar(255,255,255), 3);
+        //COMMON_LYJ::SLAM_LYJ_DEBUGGER::drawPointMatches(imageExtractDatas_[id1]->img, imageExtractDatas_[id1]->kps_, imageExtractDatas_[id2]->img, imageExtractDatas_[id2]->kps_, _imageMatchData->match2to1P, imgMatch, cv::Scalar(255,255,255), 3);
         //cv::pyrDown(imgMatch, imgMatch);
         //cv::pyrDown(imgMatch, imgMatch);
         //cv::imshow("match", imgMatch);
         //cv::waitKey();
         };
-    std::vector<SLAM_LYJ::BitFlagVec> bfvs(imgSize);
+    std::vector<COMMON_LYJ::BitFlagVec> bfvs(imgSize);
     for (int i = 0; i < imgSize; ++i)
         bfvs[i].assign(imgSize, false);
     for (int i = 0; i < imgSize - 1; ++i)
@@ -368,7 +368,7 @@ bool ProcessorVP::matchFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
+        COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);
         threadPool.process(funcQury, 0, imgSize);
         std::cout << "qury time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -398,7 +398,7 @@ bool ProcessorVP::matchFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(opt_.threadNum);
+        COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);
         threadPool.process(funcMatchMulti, 0, matchDatasPtr.size());
         std::cout << "match time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(

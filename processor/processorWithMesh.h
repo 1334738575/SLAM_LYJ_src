@@ -24,7 +24,7 @@ public:
 	bool optimize() override;
 
 private:
-	SLAM_LYJ::BaseTriMesh btm_;
+	COMMON_LYJ::BaseTriMesh btm_;
 	CUDA_LYJ::ProHandle proHandle_ = nullptr;
 	std::vector<CUDA_LYJ::ProjectorCache> proCaches_;
 };
