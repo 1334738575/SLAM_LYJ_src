@@ -322,27 +322,27 @@ bool ProcessorVP::matchFeature()
         _imageMatchData->debugPath = "D:/tmp/imageProcess/match/";
         ImageProcess_LYJ::matchFeature(imageExtractDatas_[id1].get(), imageExtractDatas_[id2].get(), _imageMatchData.get(), opt_.imageMatchOpt);
 
-        //std::cout << "match image " << id1 << " and image " << id2 << " cnt " << _imageMatchData->pointMatchSize \
-        //    << " triangle " << _imageMatchData->triDatas.triSuccess << " " << _imageMatchData->triDatas.triSize << std::endl;
-        ////if (_imageMatchData->triDatas.triSuccess)
-        ////{
-        ////    std::vector<Eigen::Vector3f> Ps;
-        ////    const auto& triData = _imageMatchData->triDatas;
-        ////    for (int i = 0; i < triData.bTris.size(); ++i)
-        ////    {
-        ////        if (triData.bTris[i])
-        ////            Ps.push_back(triData.Ps[i].cast<float>());
-        ////    }
-        ////    COMMON_LYJ::BaseTriMesh btm;
-        ////    btm.setVertexs(Ps);
-        ////    COMMON_LYJ::writePLYMesh("D:/tmp/tri.ply", btm);
-        ////}
-        //cv::Mat imgMatch;
-        //COMMON_LYJ::SLAM_LYJ_DEBUGGER::drawPointMatches(imageExtractDatas_[id1]->img, imageExtractDatas_[id1]->kps_, imageExtractDatas_[id2]->img, imageExtractDatas_[id2]->kps_, _imageMatchData->match2to1P, imgMatch, cv::Scalar(255,255,255), 3);
-        //cv::pyrDown(imgMatch, imgMatch);
-        //cv::pyrDown(imgMatch, imgMatch);
-        //cv::imshow("match", imgMatch);
-        //cv::waitKey();
+        // std::cout << "match image " << id1 << " and image " << id2 << " cnt " << _imageMatchData->pointMatchSize \
+        //     << " triangle " << _imageMatchData->triDatas.triSuccess << " " << _imageMatchData->triDatas.triSize << std::endl;
+        // //if (_imageMatchData->triDatas.triSuccess)
+        // //{
+        // //    std::vector<Eigen::Vector3f> Ps;
+        // //    const auto& triData = _imageMatchData->triDatas;
+        // //    for (int i = 0; i < triData.bTris.size(); ++i)
+        // //    {
+        // //        if (triData.bTris[i])
+        // //            Ps.push_back(triData.Ps[i].cast<float>());
+        // //    }
+        // //    COMMON_LYJ::BaseTriMesh btm;
+        // //    btm.setVertexs(Ps);
+        // //    COMMON_LYJ::writePLYMesh("D:/tmp/tri.ply", btm);
+        // //}
+        // cv::Mat imgMatch;
+        // SLAM_LYJ_src::drawPointMatches(imageExtractDatas_[id1]->img, imageExtractDatas_[id1]->kps_, imageExtractDatas_[id2]->img, imageExtractDatas_[id2]->kps_, _imageMatchData->match2to1P, imgMatch, cv::Scalar(255,255,255), 3);
+        // cv::pyrDown(imgMatch, imgMatch);
+        // cv::pyrDown(imgMatch, imgMatch);
+        // cv::imshow("match", imgMatch);
+        // cv::waitKey();
         };
     std::vector<COMMON_LYJ::BitFlagVec> bfvs(imgSize);
     for (int i = 0; i < imgSize; ++i)
@@ -398,7 +398,8 @@ bool ProcessorVP::matchFeature()
         };
     {
         auto t_start = std::chrono::high_resolution_clock::now();
-        COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);
+        //COMMON_LYJ::ThreadPool threadPool(opt_.threadNum);
+        COMMON_LYJ::ThreadPool threadPool(1);
         threadPool.process(funcMatchMulti, 0, matchDatasPtr.size());
         std::cout << "match time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(
