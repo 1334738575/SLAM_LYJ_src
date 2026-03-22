@@ -40,9 +40,11 @@ namespace SLAM_LYJ_src
         //visual
         std::string imgDir = "";
         std::vector<std::string> imgNames;
+        std::function<std::string(int)> funcGetImageFileName = nullptr;
         std::string camFile = "";
         std::string priTcwDir = "";
         std::vector<std::string> priTcwNames;
+        std::function<std::string(int)> funcGetPoseFileName = nullptr;
         std::string vocPath = "";
         bool writeVoc = true;
         bool readCache = false;
@@ -52,8 +54,17 @@ namespace SLAM_LYJ_src
 
         //with mesh
         std::string meshPath = "";
+
+        //debug
+        std::string dumpPath = "";
     };
 
+    struct ProcessComOption
+    {
+        std::string vocPath = "";
+        bool readCache = false;
+        int threadNum = -1;
+    };
 
 }
 

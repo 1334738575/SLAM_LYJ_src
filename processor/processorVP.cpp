@@ -93,7 +93,10 @@ void ProcessorVP::setData(const ProcessOption & _opt)
         imageExtractDatasPtr_[i].reset(new ImageProcess_LYJ::ImageExtractData());
         imageExtractDatas_[i] = imageExtractDatasPtr_[i];
         imageExtractDatasPtr_[i]->id = i;
-        std::string imgFile = stlplus::create_filespec(opt_.imgDir, opt_.imgNames[i]);
+        std::string imgName = opt_.imgNames[i];
+        if (funcGetImageFileName_)
+            imgName = funcGetImageFileName_(i);
+        std::string imgFile = stlplus::create_filespec(opt_.imgDir, imgName);
         imageExtractDatasPtr_[i]->path = imgFile;
     }
 
@@ -125,7 +128,10 @@ void ProcessorVP::setData(const ProcessOption & _opt)
     {
         for (int i = 0; i < imgSize; ++i)
         {
-            std::string priTcwFile = stlplus::create_filespec(opt_.priTcwDir, opt_.priTcwNames[i]);
+            std::string priTcwName = opt_.priTcwNames[i];
+            if (funcGetPoseFileName_)
+                priTcwName = funcGetPoseFileName_(i);
+            std::string priTcwFile = stlplus::create_filespec(opt_.priTcwDir, priTcwName);
             COMMON_LYJ::readT34(priTcwFile, imageExtractDatasPtr_[i]->Tcw);
         }
     }
@@ -285,7 +291,7 @@ bool ProcessorVP::extractFeature()
     }
     auto funcTransform = [&](uint64_t _s, uint64_t _e) {
         std::vector<cv::Mat> features;
-        features.reserve(2000);
+        features.reserve(8192);
         for (int i = _s; i < _e; ++i)
         {
             features.clear();

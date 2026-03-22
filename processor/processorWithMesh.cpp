@@ -99,11 +99,11 @@ bool ProcessorWithMesh::extractFeature()
 	auto funcProject = [&](uint64_t _s, uint64_t _e, uint32_t _id) {
 		for (int i = _s; i < _e; ++i)
 		{
-			COMMON_LYJ::Timer q;
+			//COMMON_LYJ::Timer q;
 			pBuffers[_id].updateTcw(imageExtractDatasPtr_[i]->Tcw);
 			CUDA_LYJ::project(proHandle_, proCaches_[_id], pBuffers[_id].Tcw.data(), (float*)pBuffers[_id].depthsM.data, pBuffers[_id].fIds.data(), pBuffers[_id].allVisiblePIds.data(), pBuffers[_id].allVisibleFIds.data(), pBuffers[_id].minD, pBuffers[_id].maxD, pBuffers[_id].csTh, pBuffers[_id].detDTh);
-			double t = q.elapsed();
-			std::cout << "cost time: " << t << " ms" << std::endl;
+			//double t = q.elapsed();
+			//std::cout << "cost time: " << t << " ms" << std::endl;
 			imageExtractDatasPtr_[i]->depths = pBuffers[_id].depthsM.clone();
 			imageExtractDatasPtr_[i]->fIds = pBuffers[_id].fIds;
 			//cv::Mat depthsShow(h, w, CV_8UC1);
@@ -121,7 +121,7 @@ bool ProcessorWithMesh::extractFeature()
 			//}
 			//cv::imshow("depth", depthsShow);
 			//cv::waitKey();
-			if (true)
+			if (false)
 			{
 				std::vector<Eigen::Vector3f> clrs(btm_.getVn());
 				std::string objPath = "D:/SLAM_LYJ_Packages/SLAM_LYJ_qt/data/";

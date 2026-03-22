@@ -7,6 +7,7 @@
 #include <DBoW3/Vocabulary.h>
 #include <DBoW3/Database.h>
 #include "map/map.h"
+#include <functional>
 
 NSP_SLAM_LYJ_SRC_BEGIN
 
@@ -17,6 +18,7 @@ protected:
     /* data */
     ProcessOption opt_;
     COMMON_LYJ::PinholeCamera cam_;
+    //int dsTimes = 0;//降采样次数，自适应
     std::vector<std::shared_ptr<ImageProcess_LYJ::ImageExtractData>> imageExtractDatasPtr_;//与imageExtractDatas_相同
     std::map<uint32_t, std::shared_ptr<ImageProcess_LYJ::ImageExtractData>> imageExtractDatas_;
     std::unordered_map<uint64_t, std::shared_ptr<ImageProcess_LYJ::ImageMatchData>> imageMatchDatas_;
@@ -24,6 +26,9 @@ protected:
     std::shared_ptr<DBoW3::Vocabulary> voc_ = nullptr;
     std::shared_ptr<DBoW3::Database> vocDB_ = nullptr;
     std::shared_ptr<Map> map_ = nullptr;
+
+    std::function<std::string(int)> funcGetPoseFileName_ = nullptr;
+    std::function<std::string(int)> funcGetImageFileName_ = nullptr;
 public:
     ProcessorVP(/* args */);
     ~ProcessorVP();
