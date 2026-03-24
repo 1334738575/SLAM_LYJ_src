@@ -2,6 +2,7 @@
 #include <processor/processorVP.h>
 #include <processor/processorWithMesh.h>
 #include <processor/processorWithMeshCom.h>
+#include <processor/processorWithMeshComAft.h>
 #include <IO/BaseIO.h>
 
 
@@ -80,6 +81,14 @@ SLAM_LYJ_SRC_API void reconstructVisualWithMeshCom(COMMON_LYJ::BaseTriMesh& _btm
     //COMMON_LYJ::writeBinFile<BaseTriMesh&, std::vector<CompressedImage*>&, std::vector<Pose3D>&, std::vector<PinholeCamera>&, ProcessComOption>("D:/tmp/reconstructVisualWithMeshCom.bin", _btm, _imgs, _Tcws, _cams, _opt);
     //COMMON_LYJ::writeBinFile<BaseTriMesh&, std::vector<CompressedImage*>&, std::vector<Pose3D>&, std::vector<PinholeCamera>&>("D:/tmp/reconstructVisualWithMeshComView.bin", _btm, _imgs, _Tcws, _cams);
     ProcessorWithMeshCom processor;
+    processor.process(_btm, _imgs, _Tcws, _cams, _opt);
+    return;
+}
+
+SLAM_LYJ_SRC_API void reconstructVisualWithMeshComAft(COMMON_LYJ::BaseTriMesh& _btm, std::vector<COMMON_LYJ::CompressedImage*>& _imgs, std::vector<COMMON_LYJ::Pose3D>& _Tcws, std::vector<COMMON_LYJ::PinholeCamera>& _cams, ProcessComOption _opt)
+{
+    using namespace COMMON_LYJ;
+    ProcessorWithMeshComAft processor;
     processor.process(_btm, _imgs, _Tcws, _cams, _opt);
     return;
 }

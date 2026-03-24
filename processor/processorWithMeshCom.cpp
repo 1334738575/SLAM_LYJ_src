@@ -232,6 +232,7 @@ ProcessorWithMeshCom::~ProcessorWithMeshCom()
 {
 	if (proHandle_)
 		CUDA_LYJ::release(proHandle_);
+	proHandle_ = nullptr;
 }
 
 
@@ -256,6 +257,7 @@ void ProcessorWithMeshCom::process(COMMON_LYJ::BaseTriMesh& _btm, std::vector<CO
 		if (!optimize(i))
 			break;
 	}
+
 	for (int i = 0; i < Tcws_.size(); ++i)
 	{
 		_Tcws[i] = extractDatas_[i].Tcw;
@@ -492,7 +494,7 @@ bool ProcessorWithMeshCom::match()
 	int imgSize = imgs_.size();
 	matchDatas_.reserve(50 * imgSize);
 	uint64_t key;
-	MatchData matchDataTmp;
+	MatchDataCom matchDataTmp;
 	for (int i = 0; i < imgSize - 1; ++i)
 	{
 		for (int j = i + 1; j < imgSize; ++j)
@@ -834,7 +836,7 @@ bool ProcessorWithMeshCom::optimize(int _i)
 	return true;
 }
 
-bool ProcessorWithMeshCom::optimize2()
+bool ProcessorWithMeshCom::optimizeCeres()
 {
 	using namespace OPTIMIZE_LYJ;
 	int imgSz = extractDatas_.size();
