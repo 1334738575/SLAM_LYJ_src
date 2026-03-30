@@ -13,8 +13,7 @@
 
 NSP_SLAM_LYJ_SRC_BEGIN
 
-
-static void ComputeThreeMaxima(std::vector<int>* histo, const int L, int& ind1, int& ind2, int& ind3)
+static void ComputeThreeMaxima(std::vector<int> *histo, const int L, int &ind1, int &ind2, int &ind3)
 {
 	int max1 = 0;
 	int max2 = 0;
@@ -56,10 +55,10 @@ static void ComputeThreeMaxima(std::vector<int>* histo, const int L, int& ind1, 
 		ind3 = -1;
 	}
 }
-static int DescriptorDistance(const cv::Mat& a, const cv::Mat& b)
+static int DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 {
-	const int* pa = a.ptr<int32_t>();
-	const int* pb = b.ptr<int32_t>();
+	const int *pa = a.ptr<int32_t>();
+	const int *pb = b.ptr<int32_t>();
 
 	int dist = 0;
 
@@ -75,18 +74,18 @@ static int DescriptorDistance(const cv::Mat& a, const cv::Mat& b)
 }
 static int matchByPro(
 	int w2, int h2,
-	const Eigen::Matrix3d& K2,
-	const std::vector<cv::KeyPoint>& features1, const std::vector<cv::KeyPoint>& features2,
-	const cv::Mat& desc1, const cv::Mat& desc2,
-	ImageProcess_LYJ::FeatureGrid* grid2,
-	COMMON_LYJ::Pose3D& _Tcw1, COMMON_LYJ::Pose3D& _Tcw2,
-	std::vector<Eigen::Vector3f>& _P3Ds1, std::vector<Eigen::Vector3f>& _P3Ds2, float _squareDistTh,
-	std::vector<std::shared_ptr<ObserveDataCom>>& _landmarks1,
-	std::vector<int>& _matches2to1,
-	double th = 50, double nnTh = 0.9)
+	const Eigen::Matrix3d &K2,
+	const std::vector<cv::KeyPoint> &features1, const std::vector<cv::KeyPoint> &features2,
+	const cv::Mat &desc1, const cv::Mat &desc2,
+	ImageProcess_LYJ::FeatureGrid *grid2,
+	COMMON_LYJ::Pose3D &_Tcw1, COMMON_LYJ::Pose3D &_Tcw2,
+	std::vector<Eigen::Vector3f> &_P3Ds1, std::vector<Eigen::Vector3f> &_P3Ds2, float _squareDistTh,
+	std::vector<std::shared_ptr<ObserveDataCom>> &_landmarks1,
+	std::vector<int> &_matches2to1,
+	double th = 50, double nnTh = 0.6)
 {
 	int cnt = 0;
-	auto& matches = _matches2to1;
+	auto &matches = _matches2to1;
 	matches.assign(features1.size(), -1);
 	std::vector<int> matches2(features2.size(), -1);
 	// compute F matrix
@@ -99,9 +98,9 @@ static int matchByPro(
 	for (size_t i = 0; i < features1.size(); ++i)
 	{
 		// Eigen::Vector3d p1(features1[i].pt.x, features1[i].pt.y, 1);
-		const cv::Mat& des1 = desc1.row(i);
+		const cv::Mat &des1 = desc1.row(i);
 		if (_landmarks1[i] == nullptr)
-			continue;    
+			continue;
 		Pw1(2) = -1;
 		if (!_P3Ds1.empty() && _P3Ds1[i](2) > 0)
 			Pw1 = Twc1 * _P3Ds1[i];
@@ -137,7 +136,7 @@ static int matchByPro(
 			if ((_landmarks1[i]->P3D.cast<float>() - Pw2).squaredNorm() > _squareDistTh)
 				continue;
 			// compute distance
-			const cv::Mat& des2 = desc2.row(ids[j]);
+			const cv::Mat &des2 = desc2.row(ids[j]);
 			const int dist = DescriptorDistance(des1, des2);
 
 			// judge
@@ -170,7 +169,6 @@ static int matchByPro(
 	return cnt;
 }
 
-
 ProcessorWithMeshComAft::ProcessorWithMeshComAft()
 {
 }
@@ -181,8 +179,7 @@ ProcessorWithMeshComAft::~ProcessorWithMeshComAft()
 	proHandle_ = nullptr;
 }
 
-
-void ProcessorWithMeshComAft::process(COMMON_LYJ::BaseTriMesh& _btm, std::vector<COMMON_LYJ::CompressedImage*>& _imgs, std::vector<COMMON_LYJ::Pose3D>& _Tcws, std::vector<COMMON_LYJ::PinholeCamera>& _cams, ProcessComOption _opt)
+void ProcessorWithMeshComAft::process(COMMON_LYJ::BaseTriMesh &_btm, std::vector<COMMON_LYJ::CompressedImage *> &_imgs, std::vector<COMMON_LYJ::Pose3D> &_Tcws, std::vector<COMMON_LYJ::PinholeCamera> &_cams, ProcessComOption _opt)
 {
 	btm_ = &_btm;
 	imgs_ = _imgs;
@@ -214,7 +211,7 @@ bool ProcessorWithMeshComAft::generatePairs()
 		pairDatas_[i].status.assign(imgSize, false);
 	}
 
-	//seq
+	// seq
 	int seqNN = 10;
 	for (int i = 0; i < imgSize; ++i)
 	{
@@ -244,18 +241,18 @@ bool ProcessorWithMeshComAft::generate3DInfos()
 		grids[i] = std::make_shared<ImageProcess_LYJ::FeatureGrid>(w, h, 20, extractDatas_[i].kps);
 	}
 
-
 	bool bDebugMatch = false;
-	auto funcMatchMulti = [&](uint64_t _s, uint64_t _e) {
+	auto funcMatchMulti = [&](uint64_t _s, uint64_t _e)
+	{
 		std::vector<int> match2to1;
 		for (int i = _s; i < _e; ++i)
 		{
 			int id1 = matchDatas_[i].id1;
 			int id2 = matchDatas_[i].id2;
-			std::vector<Eigen::Vector2i>& matches = matchDatas_[i].matches;
+			std::vector<Eigen::Vector2i> &matches = matchDatas_[i].matches;
 			int cnt;
-			auto& _frame1 = extractDatas_[id1];
-			auto& _frame2 = extractDatas_[id2];
+			auto &_frame1 = extractDatas_[id1];
+			auto &_frame2 = extractDatas_[id2];
 			cnt = matchByPro(
 				w, h,
 				_frame2.cam->getK(),
@@ -265,8 +262,7 @@ bool ProcessorWithMeshComAft::generate3DInfos()
 				_frame1.Tcw, _frame2.Tcw,
 				_frame1.P3Ds, _frame2.P3Ds, 900,
 				landmarksEveryFrames[id1],
-				match2to1
-			);
+				match2to1);
 			if (cnt < 10)
 				continue;
 			matches.reserve(cnt);
@@ -309,34 +305,34 @@ bool ProcessorWithMeshComAft::generate3DInfos()
 		}
 	};
 	auto funcUpdateObserve = [&](uint64_t _s, uint64_t _e)
+	{
+		for (int i = _s; i < _e; ++i)
 		{
-			for (int i = _s; i < _e; ++i)
+			int id1 = matchDatas_[i].id1;
+			int id2 = matchDatas_[i].id2;
+			std::vector<Eigen::Vector2i> &matches = matchDatas_[i].matches;
+			auto &_frame1 = extractDatas_[id1];
+			auto &_frame2 = extractDatas_[id2];
+			int cnt = matches.size();
+			for (int j = 0; j < cnt; ++j)
 			{
-				int id1 = matchDatas_[i].id1;
-				int id2 = matchDatas_[i].id2;
-				std::vector<Eigen::Vector2i>& matches = matchDatas_[i].matches;
-				auto& _frame1 = extractDatas_[id1];
-				auto& _frame2 = extractDatas_[id2];
-				int cnt = matches.size();
-				for (int j = 0; j < cnt; ++j)
-				{
-					landmarksEveryFrames[id2][matches[j](1)] = landmarksEveryFrames[id1][matches[j](0)];
-					landmarksEveryFrames[id1][matches[j](0)]->obs.emplace_back(id2, matches[j](1));
-				}
-				auto Twc2 = _frame2.Tcw.inversed();
-				for (int j = 0; j < _frame2.P3Ds.size(); ++j)
-				{
-					if (landmarksEveryFrames[id2][j])
-						continue;
-					if (_frame2.P3Ds[j](2) <= 0)
-						continue;
-					Eigen::Vector3f Pw = Twc2 * _frame2.P3Ds[j];
-					std::shared_ptr<ObserveDataCom> obTmp = std::make_shared<ObserveDataCom>(Pw, id2, j);
-					observeDatas_.push_back(obTmp);
-					landmarksEveryFrames[id2][j] = obTmp;
-				}
+				landmarksEveryFrames[id2][matches[j](1)] = landmarksEveryFrames[id1][matches[j](0)];
+				landmarksEveryFrames[id1][matches[j](0)]->obs.emplace_back(id2, matches[j](1));
 			}
-		};
+			auto Twc2 = _frame2.Tcw.inversed();
+			for (int j = 0; j < _frame2.P3Ds.size(); ++j)
+			{
+				if (landmarksEveryFrames[id2][j])
+					continue;
+				if (_frame2.P3Ds[j](2) <= 0)
+					continue;
+				Eigen::Vector3f Pw = Twc2 * _frame2.P3Ds[j];
+				std::shared_ptr<ObserveDataCom> obTmp = std::make_shared<ObserveDataCom>(Pw, id2, j);
+				observeDatas_.push_back(obTmp);
+				landmarksEveryFrames[id2][j] = obTmp;
+			}
+		}
+	};
 
 	auto Twc1Tmp = extractDatas_[0].Tcw.inversed();
 	for (int j = 0; j < extractDatas_[0].P3Ds.size(); ++j)
@@ -373,13 +369,13 @@ bool ProcessorWithMeshComAft::generate3DInfos()
 			COMMON_LYJ::ThreadPool threadPool(thdNum);
 			threadPool.process(funcMatchMulti, st, ed);
 			std::cout << "match time: "
-				<< std::chrono::duration_cast<std::chrono::milliseconds>(
-					std::chrono::high_resolution_clock::now() - t_start).count() << " ms\n";
+					  << std::chrono::duration_cast<std::chrono::milliseconds>(
+							 std::chrono::high_resolution_clock::now() - t_start)
+							 .count()
+					  << " ms\n";
 		}
 		funcUpdateObserve(st, ed);
 	}
-
-
 
 	return true;
 }
@@ -399,7 +395,7 @@ bool ProcessorWithMeshComAft::optimize(int _i)
 	int pointSz = observeDatas2Opt.size();
 
 	OptimizerLargeSparse optimizer;
-	//OptimizeLargeSRBA optimizer;
+	// OptimizeLargeSRBA optimizer;
 	std::vector<std::shared_ptr<OptVarAbr<double>>> Tcws;
 	std::vector<std::shared_ptr<OptVarAbr<double>>> Pws;
 	std::vector<double> K(4);
@@ -408,49 +404,47 @@ bool ProcessorWithMeshComAft::optimize(int _i)
 	K[2] = cam_.cx();
 	K[3] = cam_.cy();
 
-	auto funcGeneratePointVertex = [&](Eigen::Vector3d& _Pw, uint64_t& _vId, bool _fix = false)
-		{
-			std::shared_ptr<OptVarAbr<double>> varPtr = std::make_shared<OptVarPoint3d>(_vId);
-			varPtr->setData(_Pw.data());
-			varPtr->setFixed(_fix);
-			optimizer.addVariable(varPtr);
-			Pws.push_back(varPtr);
-			++_vId;
-		};
-	auto funcGeneratePoseVertex = [&](Eigen::Matrix<double, 3, 4>& _Tcw, uint64_t& _vId, bool _fix = false)
-		{
-			std::shared_ptr<OptVarAbr<double>> varPtr = std::make_shared<OptVarPose3d>(_vId);
-			varPtr->setData(_Tcw.data());
-			varPtr->setFixed(_fix);
-			optimizer.addVariable(varPtr);
-			Tcws.push_back(varPtr);
-			++_vId;
-		};
+	auto funcGeneratePointVertex = [&](Eigen::Vector3d &_Pw, uint64_t &_vId, bool _fix = false)
+	{
+		std::shared_ptr<OptVarAbr<double>> varPtr = std::make_shared<OptVarPoint3d>(_vId);
+		varPtr->setData(_Pw.data());
+		varPtr->setFixed(_fix);
+		optimizer.addVariable(varPtr);
+		Pws.push_back(varPtr);
+		++_vId;
+	};
+	auto funcGeneratePoseVertex = [&](Eigen::Matrix<double, 3, 4> &_Tcw, uint64_t &_vId, bool _fix = false)
+	{
+		std::shared_ptr<OptVarAbr<double>> varPtr = std::make_shared<OptVarPose3d>(_vId);
+		varPtr->setData(_Tcw.data());
+		varPtr->setFixed(_fix);
+		optimizer.addVariable(varPtr);
+		Tcws.push_back(varPtr);
+		++_vId;
+	};
 
-
-	auto funcGenerateUVFactor = [&](Eigen::Vector2d& _ob, uint64_t _vId1, uint64_t _vId2, uint64_t& _fId)
-		{
-			std::shared_ptr<OptFactorAbr<double>> factorPtr = std::make_shared<OptFactorUV_Pose3d_Point3d>(_fId);
-			OptFactorUV_Pose3d_Point3d* factor = dynamic_cast<OptFactorUV_Pose3d_Point3d*>(factorPtr.get());
-			factor->setObs(_ob.data(), K.data());
-			std::vector<uint64_t> vIds;
-			vIds.push_back(_vId1);
-			vIds.push_back(_vId2);
-			optimizer.addFactor(factorPtr, vIds);
-			++_fId;
-		};
-	auto funcGenerateScaleFactor = [&](double _ob, uint64_t _vId1, uint64_t _vId2, uint64_t& _fId)
-		{
-			std::shared_ptr<OptFactorAbr<double>> factorPtr = std::make_shared<OptFactorScale_Pose3d_Point3d>(_fId);
-			OptFactorScale_Pose3d_Point3d* factor = dynamic_cast<OptFactorScale_Pose3d_Point3d*>(factorPtr.get());
-			factor->setObs(_ob);
-			std::vector<uint64_t> vIds;
-			vIds.push_back(_vId1);
-			vIds.push_back(_vId2);
-			optimizer.addFactor(factorPtr, vIds);
-			++_fId;
-		};
-
+	auto funcGenerateUVFactor = [&](Eigen::Vector2d &_ob, uint64_t _vId1, uint64_t _vId2, uint64_t &_fId)
+	{
+		std::shared_ptr<OptFactorAbr<double>> factorPtr = std::make_shared<OptFactorUV_Pose3d_Point3d>(_fId);
+		OptFactorUV_Pose3d_Point3d *factor = dynamic_cast<OptFactorUV_Pose3d_Point3d *>(factorPtr.get());
+		factor->setObs(_ob.data(), K.data());
+		std::vector<uint64_t> vIds;
+		vIds.push_back(_vId1);
+		vIds.push_back(_vId2);
+		optimizer.addFactor(factorPtr, vIds);
+		++_fId;
+	};
+	auto funcGenerateScaleFactor = [&](double _ob, uint64_t _vId1, uint64_t _vId2, uint64_t &_fId)
+	{
+		std::shared_ptr<OptFactorAbr<double>> factorPtr = std::make_shared<OptFactorScale_Pose3d_Point3d>(_fId);
+		OptFactorScale_Pose3d_Point3d *factor = dynamic_cast<OptFactorScale_Pose3d_Point3d *>(factorPtr.get());
+		factor->setObs(_ob);
+		std::vector<uint64_t> vIds;
+		vIds.push_back(_vId1);
+		vIds.push_back(_vId2);
+		optimizer.addFactor(factorPtr, vIds);
+		++_fId;
+	};
 
 	Eigen::Matrix<double, 3, 4> TcwTmp;
 	uint64_t vId = 0;
@@ -473,17 +467,17 @@ bool ProcessorWithMeshComAft::optimize(int _i)
 	for (int i = 0; i < pointSz; ++i)
 	{
 		uint64_t varPId = i + imgSz;
-		const auto& obs = observeDatas2Opt[i]->obs;
-		const auto& obSz = obs.size();
+		const auto &obs = observeDatas2Opt[i]->obs;
+		const auto &obSz = obs.size();
 		for (int j = 0; j < obSz; ++j)
 		{
-			const auto& imgId = obs[j](0);
-			const auto& uvId = obs[j](1);
+			const auto &imgId = obs[j](0);
+			const auto &uvId = obs[j](1);
 			uint64_t varTId = imgId;
 			if (!sAdded)
 			{
-				const auto& Tcw = extractDatas_[imgId].Tcw;
-				const auto& Pw = observeDatas2Opt[i]->P3D;
+				const auto &Tcw = extractDatas_[imgId].Tcw;
+				const auto &Pw = observeDatas2Opt[i]->P3D;
 				Eigen::Vector3d Pc = Tcw * Pw;
 				double ss = Pc.squaredNorm();
 				funcGenerateScaleFactor(ss, varTId, varPId, fId);
@@ -498,7 +492,7 @@ bool ProcessorWithMeshComAft::optimize(int _i)
 	optimizer.run();
 	for (int i = 0; i < Tcws.size(); ++i)
 	{
-		OptVarPose3d* v = dynamic_cast<OptVarPose3d*>(Tcws[i].get());
+		OptVarPose3d *v = dynamic_cast<OptVarPose3d *>(Tcws[i].get());
 		TcwTmp = v->getEigen();
 		extractDatas_[i].Tcw = COMMON_LYJ::Pose3D(TcwTmp);
 	}
@@ -526,14 +520,13 @@ bool ProcessorWithMeshComAft::optimizeCeres()
 	K(0, 2) = cam_.cx();
 	K(1, 2) = cam_.cy();
 
-
 	std::vector<Eigen::Matrix<double, 7, 1>> ceresPoses(imgSz);
 	CeresProblem ceresPro;
 	ceresPro.setMaxIter(10);
 	for (int i = 0; i < imgSz; ++i)
 	{
-		const Eigen::Matrix3d& Rcw = extractDatas_[i].Tcw.getR();
-		const Eigen::Vector3d& tcw = extractDatas_[i].Tcw.gett();
+		const Eigen::Matrix3d &Rcw = extractDatas_[i].Tcw.getR();
+		const Eigen::Vector3d &tcw = extractDatas_[i].Tcw.gett();
 		Eigen::Quaterniond qcw(Rcw);
 		ceresPoses[i][0] = qcw.w();
 		ceresPoses[i][1] = qcw.x();
@@ -554,12 +547,12 @@ bool ProcessorWithMeshComAft::optimizeCeres()
 	for (int i = 0; i < pointSz; ++i)
 	{
 		ceresPro.addPoint3DParameter(observeDatas2Opt[i]->P3D.data(), false);
-		const auto& obs = observeDatas2Opt[i]->obs;
-		const auto& obSz = obs.size();
+		const auto &obs = observeDatas2Opt[i]->obs;
+		const auto &obSz = obs.size();
 		for (int j = 0; j < obSz; ++j)
 		{
-			const auto& imgId = obs[j](0);
-			const auto& uvId = obs[j](1);
+			const auto &imgId = obs[j](0);
+			const auto &uvId = obs[j](1);
 
 			uvd(0) = extractDatas_[imgId].kps[uvId].pt.x;
 			uvd(1) = extractDatas_[imgId].kps[uvId].pt.y;
@@ -571,9 +564,9 @@ bool ProcessorWithMeshComAft::optimizeCeres()
 	for (int i = 0; i < imgSz; ++i)
 	{
 		Eigen::Quaterniond qcw;
-		Eigen::Matrix3d& Rcw = extractDatas_[i].Tcw.getR();
-		Eigen::Vector3d& tcw = extractDatas_[i].Tcw.gett();
-		auto& pose = ceresPoses[i];
+		Eigen::Matrix3d &Rcw = extractDatas_[i].Tcw.getR();
+		Eigen::Vector3d &tcw = extractDatas_[i].Tcw.gett();
+		auto &pose = ceresPoses[i];
 		qcw.w() = pose(0);
 		qcw.x() = pose(1);
 		qcw.y() = pose(2);
@@ -585,11 +578,5 @@ bool ProcessorWithMeshComAft::optimizeCeres()
 	}
 	return true;
 }
-
-
-
-
-
-
 
 NSP_SLAM_LYJ_SRC_END
