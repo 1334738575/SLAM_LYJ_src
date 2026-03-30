@@ -159,9 +159,7 @@ static int matchByPro(
 		if (best_dist > th || second_dist * nnTh < best_dist)
 			continue;
 		if (matches2[best_id] != -1)
-		{
 			continue;
-		}
 		matches[i] = best_id;
 		matches2[best_id] = i;
 		++cnt;
@@ -215,7 +213,7 @@ bool ProcessorWithMeshComAft::generatePairs()
 	}
 
 	//seq
-	int seqNN = 10;
+	int seqNN = 20;
 	for (int i = 0; i < imgSize; ++i)
 	{
 		for (int j = i - seqNN; j <= i + seqNN; ++j)

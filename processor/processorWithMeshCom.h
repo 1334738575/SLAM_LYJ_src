@@ -30,6 +30,7 @@ struct ExtractDataCom
 
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat descs;
+	std::shared_ptr<ImageProcess_LYJ::FeatureGridConst> grid = nullptr;
 	DBoW3::FeatureVector featureVec;
 	DBoW3::BowVector bowVec;
 

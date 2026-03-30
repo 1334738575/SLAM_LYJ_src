@@ -223,6 +223,108 @@ static int matchByBoW(
 
 	return nmatches;
 }
+static int matchPro(
+	int w2, int h2,
+	const Eigen::Matrix3d& K2,
+	const std::vector<cv::KeyPoint>& _kps1, const std::vector<cv::KeyPoint>& _kps2,
+	const cv::Mat& _desc1, const cv::Mat& _desc2,
+	ImageProcess_LYJ::FeatureGridConst* grid2,
+	std::vector<int>& _matches2to1,
+	COMMON_LYJ::Pose3D& _Tcw1, COMMON_LYJ::Pose3D& _Tcw2,
+	std::vector<Eigen::Vector3f>& _P3Ds1, std::vector<Eigen::Vector3f>& _P3Ds2, 
+	const float& _squareDistTh, float nnTh=0.6)
+{
+	int th = TH_LOW;
+	int cnt = 0;
+	auto& matches = _matches2to1;
+	matches.assign(_kps1.size(), -1);
+	std::vector<int> matches2(_kps2.size(), -1);
+	// compute F matrix
+	COMMON_LYJ::Pose3D T21 = _Tcw2 * _Tcw1.inversed();
+	Eigen::Vector3f Pw1;
+	Eigen::Vector3f Pw2;
+	COMMON_LYJ::Pose3D Twc1 = _Tcw1.inversed();
+	COMMON_LYJ::Pose3D Twc2 = _Tcw2.inversed();
+	Eigen::Matrix3f Kf = K2.cast<float>();
+
+	for (size_t i = 0; i < _kps1.size(); ++i)
+	{
+		Pw1(2) = -1;
+		if (!_P3Ds1.empty() && _P3Ds1[i](2) > 0)
+			Pw1 = Twc1 * _P3Ds1[i];
+		else
+			continue;
+		const cv::Mat& des1 = _desc1.row(i);
+
+		// compute project
+		Eigen::Vector3f Pc2 = _Tcw2 * Pw1;
+		if (Pc2(2) <= 0)
+			continue;
+		Pc2 /= Pc2(2);
+		Eigen::Vector3f p2 = Kf * Pc2;
+		if (p2(0) >= w2 || p2(0) < 0 || p2(1) >= h2 || p2(1) < 0)
+			continue;
+
+		// match
+		int best_id = -1;
+		int best_dist = 128 * 255;
+		int second_id = -1;
+		int second_dist = 128 * 255;
+		// get ids
+		int rGrid = 0;
+		int cGrid = 0;
+		if (!grid2->getIndGrid(p2(0), p2(1), cGrid, rGrid))
+			continue;
+		short* kpIndSt = nullptr;
+		int kpIndSz = 0;
+		for (int r = rGrid-1; r <= rGrid+1; ++r)
+		{
+			for (int c = cGrid - 1; c <= cGrid + 1; ++c)
+			{
+				grid2->getKpIndInCell(c, r, kpIndSt, kpIndSz);
+				if (kpIndSz == 0)
+					continue;
+				for (int j = 0; j < kpIndSz; ++j)
+				{
+					int id2 = int(kpIndSt[j]);
+					if (_P3Ds2[id2](2) <= 0)
+						continue;
+					Pw2 = Twc2 * _P3Ds2[id2];
+					if ((Pw1 - Pw2).squaredNorm() > _squareDistTh)
+						continue;
+					// compute distance
+					const cv::Mat& des2 = _desc2.row(id2);
+					const int dist = DescriptorDistance(des1, des2);
+
+					// judge
+					if (dist < best_dist)
+					{
+						second_id = (int)best_id;
+						second_dist = best_dist;
+						best_id = (int)id2;
+						best_dist = dist;
+					}
+					else if (dist < second_dist)
+					{
+						second_id = (int)id2;
+						second_dist = dist;
+					}
+				}
+			}
+		}
+
+		// record
+		if (best_dist > th || second_dist * nnTh < best_dist)
+			continue;
+		if (matches2[best_id] != -1)
+			continue;
+		matches[i] = best_id;
+		matches2[best_id] = i;
+		++cnt;
+	}
+
+	return cnt;
+}
 
 
 ProcessorWithMeshCom::ProcessorWithMeshCom()
@@ -313,6 +415,7 @@ bool ProcessorWithMeshCom::extract()
 			cv::cvtColor(imgCV, imgCVGray, cv::COLOR_BGR2GRAY);
 			cv::GaussianBlur(imgCVGray, imgCVGray, cv::Size(3, 3), 0);
 			orb->detectAndCompute(imgCVGray, cv::Mat(), extractDatas_[ind].kps, extractDatas_[ind].descs);
+			extractDatas_[ind].grid.reset(new ImageProcess_LYJ::FeatureGridConst(extractDatas_[ind].kps));
 
 			auto& P3Ds = extractDatas_[ind].P3Ds;
 			auto& kps = extractDatas_[ind].kps;
@@ -682,7 +785,8 @@ bool ProcessorWithMeshCom::optimize(int _i)
 	bool addPlane = true;
 
 	//OptimizerLargeSparse optimizer;
-	OptimizeLargeSRBA optimizer;
+	OptimizerLargeSparseJtJ optimizer;
+	//OptimizeLargeSRBA optimizer;
 	optimizer.setMaxIter(1);
 	uint64_t vId = 0;
 	uint64_t ftrId = 0;
